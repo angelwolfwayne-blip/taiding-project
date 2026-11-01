@@ -6,6 +6,7 @@
   <title>溙鼎環境科技 - 專案管理暨業務日報系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Excel 與 Word 解析套件 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <style>
@@ -21,13 +22,13 @@
 </head>
 <body class="bg-slate-900 text-slate-100 min-h-screen pb-12 font-sans antialiased selection:bg-emerald-500 selection:text-slate-950">
 
-  <!-- 頂部即時時鐘列 -->
+  <!-- 頂部即時時鐘列 (精確顯示幾點幾分及秒數持續跳動) -->
   <div class="bg-slate-950 border-b border-slate-800 px-4 py-2 text-xs text-slate-300 flex flex-wrap justify-between items-center no-print">
     <div class="flex items-center gap-2">
       <span class="inline-flex items-center px-2 py-0.5 rounded text-[11px] font-bold bg-emerald-500/10 text-emerald-400 border border-emerald-500/20">
-        <i class="fa-solid fa-clock mr-1"></i> 即時系統時間
+        <i class="fa-solid fa-clock mr-1 animate-pulse"></i> 即時系統時間
       </span>
-      <span id="live-time-display" class="font-mono font-bold text-white tracking-wide">民國 115 年 11 月 1 日 (2026) 星期日</span>
+      <span id="live-time-display" class="font-mono font-bold text-white tracking-wide">載入中...</span>
     </div>
     <div class="flex items-center gap-3 text-[11px]">
       <span>當前推進週期：<strong id="current-week-banner" class="text-emerald-400 font-mono font-bold">10/26 - 10/30</strong></span>
@@ -609,6 +610,12 @@
           <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold">登入系統</button>
         </div>
       </form>
+      <div class="pt-3 border-t border-slate-700/80 text-[11px] text-slate-400 space-y-1">
+        <div class="text-amber-400 font-semibold"><i class="fa-solid fa-lock mr-1"></i> 僅限溙鼎內部人員登入</div>
+        <div>若帳號遺忘或有任何問題請聯繫管理員：</div>
+        <div class="font-mono text-emerald-400 select-all">Email: s0982990034@gmail.com</div>
+        <div class="font-mono text-cyan-400 select-all">電話: 06-2330668 分機 37</div>
+      </div>
     </div>
   </div>
 
@@ -647,9 +654,12 @@
   <div id="user-mgmt-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-users-gear text-purple-400"></i> 全公司人員帳號權限管理
-        </h3>
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-users-gear text-purple-400"></i> 全公司人員帳號權限管理
+          </h3>
+          <p class="text-xs text-slate-400">分配管理員 (Admin)、可編輯人員 (Editor)、可檢視人員 (Viewer)</p>
+        </div>
         <button onclick="closeUserManagerModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <form onsubmit="handleCreateUser(event)" class="bg-slate-900/90 border border-purple-500/30 p-3.5 rounded-xl space-y-3 text-xs">
@@ -761,9 +771,8 @@
   </div>
 
   <script>
-    // ================= 全套真實專案資料集 (完整保底還原庫) =================
+    // ================= 完整保底真實專案庫 (22筆) =================
     const MASTER_INITIAL_PROJECTS = [
-      // === 水污專案 (15 筆) ===
       {
         id: 1, category: "水污專案", region: "高雄", name: "玉膳食品(內湖) - 廢水濾水系統淨化工程",
         status: "進行中", progress: 50, owner: "雅淇 / 琮樺", deadline: "2026/08/31",
@@ -855,8 +864,6 @@
         report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
         notes: "CAD圖面與施工範圍已確認，BOM表材料清單確認中。", risk: "正常推展", photos: []
       },
-
-      // === 空污 VOC 專案 (7 筆) ===
       {
         id: 101, category: "空污專案", region: "台南", name: "東陽實業一部3200CMM沸石轉輪",
         status: "進行中", progress: 90, owner: "翊安", deadline: "2026/08/08",
@@ -932,38 +939,131 @@
       }
     ];
 
-    function forceRestoreOriginalData() {
-      projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
-      acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
-      selectedWeeks = [];
-      const label = document.getElementById("selected-week-label");
-      if (label) label.innerText = "全部週次 (不限)";
-      
-      localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
-      localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
-      
-      updateStats();
-      renderProjects();
-      renderAcpReports();
-      saveToCloud(true);
-      alert("✓ 已強制修復並載入 15 筆水污 + 7 筆空污真實專案！");
+    const WEEK_DAYS_ZH = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    function padZero(num) { return String(num).padStart(2, '0'); }
+
+    function getSystemDateTime() {
+      const now = new Date();
+      const rocYear = now.getFullYear() - 1911;
+      const y = now.getFullYear();
+      const m = now.getMonth() + 1;
+      const d = now.getDate();
+      const dayZh = WEEK_DAYS_ZH[now.getDay()];
+      const hh = padZero(now.getHours());
+      const mm = padZero(now.getMinutes());
+      const ss = padZero(now.getSeconds());
+      const fullString = `民國 ${rocYear} 年 ${m} 月 ${d} 日 (${y}) ${hh}:${mm}:${ss} ${dayZh}`;
+      const shortDate = `${y}-${padZero(m)}-${padZero(d)}`;
+      const zhDateOnly = `民國 ${rocYear} 年 ${m} 月 ${d} 日 ${dayZh}`;
+      return { now, rocYear, y, m, d, dayZh, hh, mm, ss, fullString, shortDate, zhDateOnly };
     }
 
-    // 初始化函式：強制寫入真實資料
+    function calculateCurrentWeekRange(baseDate = new Date()) {
+      const d = new Date(baseDate);
+      const day = d.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() + diffToMonday);
+      const friday = new Date(monday);
+      friday.setDate(monday.getDate() + 4);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      const monStr = `${monday.getFullYear()}/${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())}`;
+      const friStr = `${padZero(friday.getMonth()+1)}/${padZero(friday.getDate())}`;
+      const sunStr = `${sunday.getFullYear()}/${padZero(sunday.getMonth()+1)}/${padZero(sunday.getDate())}`;
+      const workWeekStr = `${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())} - ${friStr}`;
+      const fullWeekStr = `${monStr} ~ ${sunStr}`;
+      return { monday, friday, sunday, workWeekStr, fullWeekStr };
+    }
+
+    // 秒數實時連續跳動時鐘
+    function startRealtimeClock() {
+      function updateClock() {
+        try {
+          const dt = getSystemDateTime();
+          const liveElem = document.getElementById("live-time-display");
+          if (liveElem) liveElem.innerText = dt.fullString;
+        } catch (e) {}
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    const WEEKS_BY_YEAR = {};
+    const ALL_WEEKS = [];
+    (function generateAllWeeks() {
+      for (let y = 2025; y <= 2031; y++) { WEEKS_BY_YEAR[y] = []; }
+      let cur = new Date(2025, 0, 6);
+      const end = new Date(2031, 11, 29);
+      function fmt(d) { return `${d.getFullYear()}/${padZero(d.getMonth()+1)}/${padZero(d.getDate())}`; }
+      while (cur <= end) {
+        let sun = new Date(cur);
+        sun.setDate(cur.getDate() + 6);
+        const y = cur.getFullYear();
+        const str = `${fmt(cur)} ~ ${fmt(sun)}`;
+        if (WEEKS_BY_YEAR[y]) WEEKS_BY_YEAR[y].push(str);
+        ALL_WEEKS.push(str);
+        cur.setDate(cur.getDate() + 7);
+      }
+    })();
+
+    const DEFAULT_SYSTEM_USERS = [
+      { username: "admin", password: "taiding888", name: "總經理 / 最高管理員", role: "ADMIN", status: "active" },
+      { username: "minsong", password: "ms1234", name: "閔松", role: "EDITOR", status: "active" },
+      { username: "tsunghua", password: "th1234", name: "琮樺", role: "EDITOR", status: "active" },
+      { username: "yian", password: "ya1234", name: "翊安", role: "EDITOR", status: "active" },
+      { username: "guest", password: "guest123", name: "跨部門/外賓檢視", role: "VIEWER", status: "active" }
+    ];
+
+    const BIN_ID = "6ae716fdac6210605a6349af";
+    const API_KEY = "$2a$10$TrBm5eEyLzx6qjw7Ek1L0eOB2CvVH5Fc59ZemW8tRMlNbbmnUUbz/6";
+    const STORAGE_KEY_PROJ = "taiding_projects_data_v2";
+    const STORAGE_KEY_ACP = "taiding_acp_data_v2";
+    const STORAGE_KEY_USERS = "taiding_users_directory_v2";
+    const STORAGE_KEY_GAS = "taiding_gas_webhook_url";
+    const SESSION_AUTH_KEY = "taiding_current_session_user";
+
+    let projects = [];
+    let acpReports = [];
+    let systemUsers = [];
+    let currentMainTab = "water";
+    let selectedWeeks = [];
+    let currentYearFilter = new Date().getFullYear();
+    let currentSessionUser = null;
+    let parsedImportData = [];
+    let currentProjectPhotos = [];
+    let currentAcpPhotos = [];
+
+    const DOMAIN_STYLE = {
+      "水污專案": { badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30", icon: "fa-water" },
+      "空污專案": { badge: "bg-purple-500/10 text-purple-400 border-purple-500/30", icon: "fa-wind" },
+      "廠內工程": { badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30", icon: "fa-building" }
+    };
+
+    const STATUS_STYLE = {
+      "進行中": { border: "border-emerald-500/40", bar: "bg-emerald-500" },
+      "評估中": { border: "border-amber-500/40", bar: "bg-amber-500" },
+      "保養類": { border: "border-blue-500/40", bar: "bg-blue-500" },
+      "暫停": { border: "border-rose-500/40", bar: "bg-rose-500" },
+      "已完工": { border: "border-slate-500/40", bar: "bg-slate-400" }
+    };
+
+    const ROLE_MAP = {
+      "ADMIN": { label: "系統管理員", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" },
+      "EDITOR": { label: "可編輯人員", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+      "VIEWER": { label: "可檢視人員", color: "bg-slate-500/10 text-slate-400 border-slate-500/30" }
+    };
+
     async function init() {
       startRealtimeClock();
-
       const curWeek = calculateCurrentWeekRange();
-      const banner = document.getElementById("current-week-banner");
-      if (banner) banner.innerText = curWeek.workWeekStr;
-
+      document.getElementById("current-week-banner").innerText = curWeek.workWeekStr;
+      document.getElementById("calc-current-week-btn-text").innerText = curWeek.workWeekStr;
       buildYearSelectOptions();
 
-      // 使用者身分驗證
+      // 載入使用者
       const localUsers = localStorage.getItem(STORAGE_KEY_USERS);
-      if (localUsers) {
-        try { systemUsers = JSON.parse(localUsers); } catch(e){}
-      }
+      if (localUsers) { try { systemUsers = JSON.parse(localUsers); } catch(e){} }
       if (!systemUsers || systemUsers.length === 0) {
         systemUsers = DEFAULT_SYSTEM_USERS;
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
@@ -977,19 +1077,14 @@
           if (validUser) currentSessionUser = validUser;
         } catch(e){}
       }
-
       applyRbacUI();
 
-      // 先讀本機資料
+      // 載入本機快取專案
       const localProj = localStorage.getItem(STORAGE_KEY_PROJ);
       if (localProj) {
-        try {
-          const parsed = JSON.parse(localProj);
-          if (Array.isArray(parsed) && parsed.length > 0) projects = parsed;
-        } catch(e){}
+        try { const parsed = JSON.parse(localProj); if (Array.isArray(parsed) && parsed.length > 0) projects = parsed; } catch(e){}
       }
-
-      // 若為空陣列，立刻強制載入保底專案
+      // 保底：若本機為空，直接賦予 22 筆真實專案
       if (!projects || projects.length === 0) {
         projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
         localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
@@ -997,10 +1092,7 @@
 
       const localAcp = localStorage.getItem(STORAGE_KEY_ACP);
       if (localAcp) {
-        try {
-          const parsedAcp = JSON.parse(localAcp);
-          if (Array.isArray(parsedAcp) && parsedAcp.length > 0) acpReports = parsedAcp;
-        } catch(e){}
+        try { const parsedAcp = JSON.parse(localAcp); if (Array.isArray(parsedAcp) && parsedAcp.length > 0) acpReports = parsedAcp; } catch(e){}
       }
       if (!acpReports || acpReports.length === 0) {
         acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
@@ -1009,10 +1101,25 @@
 
       renderWeekCheckboxes(currentYearFilter);
       switchTab('water');
+      setupDragAndDrop();
       updateStats();
       renderProjects();
       renderAcpReports();
       fallbackToLocalReady();
+    }
+
+    function forceRestoreOriginalData() {
+      projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
+      acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
+      selectedWeeks = [];
+      document.getElementById("selected-week-label").innerText = "全部週次 (不限)";
+      localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
+      localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
+      updateStats();
+      renderProjects();
+      renderAcpReports();
+      saveToCloud(true);
+      alert("✓ 已強制修復並載入 15 筆水污 + 7 筆空污真實專案！");
     }
 
     function fallbackToLocalReady() {
@@ -1034,13 +1141,8 @@
       select.innerHTML = html;
     }
 
-    function canEdit() {
-      return currentSessionUser && (currentSessionUser.role === "ADMIN" || currentSessionUser.role === "EDITOR");
-    }
-
-    function canAdmin() {
-      return currentSessionUser && currentSessionUser.role === "ADMIN";
-    }
+    function canEdit() { return currentSessionUser && (currentSessionUser.role === "ADMIN" || currentSessionUser.role === "EDITOR"); }
+    function canAdmin() { return currentSessionUser && currentSessionUser.role === "ADMIN"; }
 
     function applyRbacUI() {
       const loginBtn = document.getElementById("login-nav-btn");
@@ -1054,21 +1156,14 @@
 
       if (currentSessionUser) {
         if (loginBtn) loginBtn.classList.add("hidden");
-        if (profileBadge) {
-          profileBadge.classList.remove("hidden");
-          profileBadge.classList.add("flex");
-        }
-        const bName = document.getElementById("badge-name");
-        if (bName) bName.innerText = currentSessionUser.name;
+        if (profileBadge) { profileBadge.classList.remove("hidden"); profileBadge.classList.add("flex"); }
+        document.getElementById("badge-name").innerText = currentSessionUser.name;
         const roleInfo = ROLE_MAP[currentSessionUser.role] || ROLE_MAP["VIEWER"];
-        const bRole = document.getElementById("badge-role");
-        if (bRole) bRole.innerText = roleInfo.label;
+        document.getElementById("badge-role").innerText = roleInfo.label;
 
         if (actionPanel) actionPanel.classList.remove("hidden");
-        const pName = document.getElementById("panel-user-name");
-        if (pName) pName.innerText = currentSessionUser.name;
-        const pRole = document.getElementById("panel-user-role");
-        if (pRole) pRole.innerText = roleInfo.label;
+        document.getElementById("panel-user-name").innerText = currentSessionUser.name;
+        document.getElementById("panel-user-role").innerText = roleInfo.label;
 
         if (currentSessionUser.role === "ADMIN") {
           if (adminUsersBtn) adminUsersBtn.classList.remove("hidden");
@@ -1097,29 +1192,15 @@
       }
     }
 
-    function handleAuthAction() {
-      if (currentSessionUser) logout();
-      else openLoginModal();
-    }
-
-    function openLoginModal() {
-      document.getElementById("login-modal").classList.remove("hidden");
-      document.getElementById("login-error-msg").classList.add("hidden");
-      document.getElementById("login-username").value = "";
-      document.getElementById("login-password").value = "";
-    }
-
-    function closeLoginModal() {
-      document.getElementById("login-modal").classList.add("hidden");
-    }
+    function handleAuthAction() { if (currentSessionUser) logout(); else openLoginModal(); }
+    function openLoginModal() { document.getElementById("login-modal").classList.remove("hidden"); document.getElementById("login-error-msg").classList.add("hidden"); document.getElementById("login-username").value = ""; document.getElementById("login-password").value = ""; }
+    function closeLoginModal() { document.getElementById("login-modal").classList.add("hidden"); }
 
     function handleLogin(e) {
       e.preventDefault();
       const u = document.getElementById("login-username").value.trim().toLowerCase();
       const p = document.getElementById("login-password").value.trim();
-
       const matched = systemUsers.find(user => user.username.toLowerCase() === u && user.password === p && user.status === "active");
-
       if (matched) {
         currentSessionUser = matched;
         sessionStorage.setItem(SESSION_AUTH_KEY, JSON.stringify(matched));
@@ -1127,7 +1208,7 @@
         applyRbacUI();
         renderProjects();
         renderAcpReports();
-        alert(`✓ 歡迎【${matched.name}】登入！已套用 ${ROLE_MAP[matched.role].label} 權限。`);
+        alert(`✓ 歡迎【${matched.name}】登入！`);
       } else {
         document.getElementById("login-error-msg").classList.remove("hidden");
       }
@@ -1146,15 +1227,8 @@
     function openChangePasswordModal() {
       if (!currentSessionUser) return;
       document.getElementById("change-pwd-modal").classList.remove("hidden");
-      document.getElementById("pwd-old").value = "";
-      document.getElementById("pwd-new").value = "";
-      document.getElementById("pwd-confirm").value = "";
-      document.getElementById("pwd-error-msg").classList.add("hidden");
     }
-
-    function closeChangePasswordModal() {
-      document.getElementById("change-pwd-modal").classList.add("hidden");
-    }
+    function closeChangePasswordModal() { document.getElementById("change-pwd-modal").classList.add("hidden"); }
 
     async function handleChangePassword(e) {
       e.preventDefault();
@@ -1163,16 +1237,8 @@
       const confirmPwd = document.getElementById("pwd-confirm").value.trim();
       const errorDiv = document.getElementById("pwd-error-msg");
 
-      if (oldPwd !== currentSessionUser.password) {
-        errorDiv.innerText = "舊密碼不正確！";
-        errorDiv.classList.remove("hidden");
-        return;
-      }
-      if (newPwd !== confirmPwd) {
-        errorDiv.innerText = "新密碼不一致！";
-        errorDiv.classList.remove("hidden");
-        return;
-      }
+      if (oldPwd !== currentSessionUser.password) { errorDiv.innerText = "舊密碼不正確！"; errorDiv.classList.remove("hidden"); return; }
+      if (newPwd !== confirmPwd) { errorDiv.innerText = "新密碼不一致！"; errorDiv.classList.remove("hidden"); return; }
 
       const uIdx = systemUsers.findIndex(u => u.username.toLowerCase() === currentSessionUser.username.toLowerCase());
       if (uIdx !== -1) {
@@ -1186,45 +1252,22 @@
       }
     }
 
-    function openUserManagerModal() {
-      if (!canAdmin()) {
-        alert("權限不足！只有【系統管理員】才可管理全公司帳號。");
-        return;
-      }
-      document.getElementById("user-mgmt-modal").classList.remove("hidden");
-      renderUsersTable();
-    }
-
-    function closeUserManagerModal() {
-      document.getElementById("user-mgmt-modal").classList.add("hidden");
-    }
+    function openUserManagerModal() { if (!canAdmin()) return; document.getElementById("user-mgmt-modal").classList.remove("hidden"); renderUsersTable(); }
+    function closeUserManagerModal() { document.getElementById("user-mgmt-modal").classList.add("hidden"); }
 
     function renderUsersTable() {
       const tbody = document.getElementById("user-table-tbody");
       tbody.innerHTML = systemUsers.map((u, idx) => {
         const isSelf = currentSessionUser && currentSessionUser.username.toLowerCase() === u.username.toLowerCase();
         const roleInfo = ROLE_MAP[u.role] || ROLE_MAP["VIEWER"];
-
         return `
           <tr class="hover:bg-slate-800/60 transition">
             <td class="py-2.5 px-3 font-mono font-bold text-white">${u.username}</td>
             <td class="py-2.5 px-3">${u.name}</td>
-            <td class="py-2.5 px-3">
-              <span class="px-2 py-0.5 rounded text-[10px] font-bold border ${roleInfo.color}">${roleInfo.label}</span>
-            </td>
-            <td class="py-2.5 px-3">
-              <span class="${u.status === 'active' ? 'text-emerald-400' : 'text-slate-500'} font-bold">
-                ${u.status === 'active' ? '● 啟用中' : '○ 已停用'}
-              </span>
-            </td>
+            <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${roleInfo.color}">${roleInfo.label}</span></td>
+            <td class="py-2.5 px-3"><span class="${u.status === 'active' ? 'text-emerald-400' : 'text-slate-500'} font-bold">${u.status === 'active' ? '● 啟用中' : '○ 已停用'}</span></td>
             <td class="py-2.5 px-3 text-right space-x-1.5 whitespace-nowrap">
-              ${!isSelf ? `
-                <button onclick="changeUserRole(${idx})" class="text-blue-400 hover:text-blue-300 font-medium">身分</button>
-                <button onclick="resetUserPasswordPrompt(${idx})" class="text-amber-400 hover:text-amber-300 font-medium">重設密碼</button>
-                <button onclick="toggleUserStatus(${idx})" class="${u.status === 'active' ? 'text-rose-400 hover:text-rose-300' : 'text-emerald-400 hover:text-emerald-300'} font-medium">
-                  ${u.status === 'active' ? '停用' : '啟用'}
-                </button>
-              ` : '<span class="text-slate-500 text-[10px]">當前帳號</span>'}
+              ${!isSelf ? `<button onclick="changeUserRole(${idx})" class="text-blue-400 hover:text-blue-300 font-medium">身分</button> <button onclick="resetUserPasswordPrompt(${idx})" class="text-amber-400 font-medium">重設密碼</button>` : '<span class="text-slate-500 text-[10px]">當前帳號</span>'}
             </td>
           </tr>
         `;
@@ -1237,12 +1280,7 @@
       const name = document.getElementById("new-user-name").value.trim();
       const pwd = document.getElementById("new-user-pwd").value.trim();
       const role = document.getElementById("new-user-role").value;
-
-      if (systemUsers.some(u => u.username.toLowerCase() === account)) {
-        alert("此帳號代號已被使用！");
-        return;
-      }
-
+      if (systemUsers.some(u => u.username.toLowerCase() === account)) { alert("帳號已被使用！"); return; }
       systemUsers.push({ username: account, password: pwd, name: name, role: role, status: "active" });
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
       renderUsersTable();
@@ -1253,12 +1291,11 @@
 
     async function changeUserRole(idx) {
       const u = systemUsers[idx];
-      const newRole = prompt(`請輸入 ${u.name} 的角色代號：\n1: ADMIN\n2: EDITOR\n3: VIEWER`, u.role === "ADMIN" ? "1" : (u.role === "EDITOR" ? "2" : "3"));
+      const newRole = prompt(`請輸入新角色代號：\n1: ADMIN\n2: EDITOR\n3: VIEWER`, "2");
       if (!newRole) return;
       if (newRole === "1" || newRole.toUpperCase() === "ADMIN") u.role = "ADMIN";
       else if (newRole === "2" || newRole.toUpperCase() === "EDITOR") u.role = "EDITOR";
       else if (newRole === "3" || newRole.toUpperCase() === "VIEWER") u.role = "VIEWER";
-      else { alert("無效！"); return; }
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
       renderUsersTable();
       await saveToCloud(true);
@@ -1273,14 +1310,6 @@
         await saveToCloud(true);
         alert(`✓ 已重設密碼！`);
       }
-    }
-
-    async function toggleUserStatus(idx) {
-      const u = systemUsers[idx];
-      u.status = u.status === 'active' ? 'disabled' : 'active';
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
-      renderUsersTable();
-      await saveToCloud(true);
     }
 
     function switchTab(tab) {
@@ -1319,7 +1348,6 @@
       if (!container) return;
       let list = (year === 'ALL') ? ALL_WEEKS : (WEEKS_BY_YEAR[year] || []);
       const curWeek = calculateCurrentWeekRange();
-
       container.innerHTML = list.map(w => {
         const isCurrent = w.includes(curWeek.fullWeekStr.substring(0, 10));
         const checked = selectedWeeks.includes(w) ? 'checked' : '';
@@ -1333,69 +1361,48 @@
       }).join('');
     }
 
-    function filterWeeksByYear(year) {
-      currentYearFilter = year;
-      renderWeekCheckboxes(year);
-    }
-
-    function toggleWeekDropdown() {
-      document.getElementById("week-dropdown-panel").classList.toggle("hidden");
-    }
-
+    function filterWeeksByYear(year) { currentYearFilter = year; renderWeekCheckboxes(year); }
+    function toggleWeekDropdown() { document.getElementById("week-dropdown-panel").classList.toggle("hidden"); }
     function handleWeekFilterChange(cb) {
-      if (cb.checked) {
-        selectedWeeks.push(cb.value);
-      } else {
-        selectedWeeks = selectedWeeks.filter(item => item !== cb.value);
-      }
+      if (cb.checked) selectedWeeks.push(cb.value);
+      else selectedWeeks = selectedWeeks.filter(item => item !== cb.value);
       updateSelectedWeekLabel();
       renderProjects();
     }
-
     function updateSelectedWeekLabel() {
       const label = document.getElementById("selected-week-label");
       if (selectedWeeks.length === 0) label.innerText = "全部週次 (不限)";
       else if (selectedWeeks.length === 1) label.innerText = selectedWeeks[0];
       else label.innerText = `已選 ${selectedWeeks.length} 個週次`;
     }
-
     function selectCurrentCalculatedWeek() {
       const curWeek = calculateCurrentWeekRange();
       selectedWeeks = [curWeek.workWeekStr];
-      const label = document.getElementById("selected-week-label");
-      if (label) label.innerText = curWeek.workWeekStr;
+      document.getElementById("selected-week-label").innerText = curWeek.workWeekStr;
       renderProjects();
     }
-
     function clearWeekFilter() {
       selectedWeeks = [];
-      const label = document.getElementById("selected-week-label");
-      if (label) label.innerText = "全部週次 (不限)";
+      document.getElementById("selected-week-label").innerText = "全部週次 (不限)";
       renderWeekCheckboxes(currentYearFilter);
       renderProjects();
     }
-
     function fillCalculatedWeekToModal() {
       const curWeek = calculateCurrentWeekRange();
       document.getElementById("proj-form-report-week").value = curWeek.workWeekStr;
     }
 
     function openProjectModal(id = null) {
-      if (!canEdit()) {
-        alert("權限不足！請先登入具備編輯權限之帳號。");
-        return;
-      }
-
+      if (!canEdit()) { alert("權限不足！"); return; }
       document.getElementById("project-modal").classList.remove("hidden");
       document.querySelectorAll(".ms-check").forEach(cb => cb.checked = false);
-
       const dt = getSystemDateTime();
       const curWeek = calculateCurrentWeekRange();
       document.getElementById("modal-today-hint").innerText = dt.zhDateOnly;
 
       if (id) {
         const p = projects.find(item => item.id === id);
-        document.getElementById("modal-project-title").innerText = "編輯專案案場 (版本控管)";
+        document.getElementById("modal-project-title").innerText = "編輯專案案場";
         document.getElementById("proj-form-id").value = p.id;
         document.getElementById("proj-form-category").value = p.category;
         document.getElementById("proj-form-region").value = p.region;
@@ -1407,19 +1414,8 @@
         document.getElementById("proj-form-deadline-picker").value = p.deadline_iso || dt.shortDate;
         document.getElementById("proj-form-notes").value = p.notes;
         document.getElementById("proj-form-risk").value = p.risk;
-        
         currentProjectPhotos = p.photos ? [...p.photos] : [];
         renderProjectPhotosPreview();
-
-        const curPct = Number(p.progress || 0);
-        const checks = document.querySelectorAll(".ms-check");
-        if (curPct >= 10 && checks[0]) checks[0].checked = true;
-        if (curPct >= 30 && checks[1]) checks[1].checked = true;
-        if (curPct >= 50 && checks[2]) checks[2].checked = true;
-        if (curPct >= 75 && checks[3]) checks[3].checked = true;
-        if (curPct >= 90 && checks[4]) checks[4].checked = true;
-        if (curPct >= 100 && checks[5]) checks[5].checked = true;
-
       } else {
         document.getElementById("modal-project-title").innerText = "新增專案案場";
         document.getElementById("proj-form-id").value = "";
@@ -1431,36 +1427,22 @@
         document.getElementById("proj-form-report-week").value = curWeek.workWeekStr;
         document.getElementById("proj-form-deadline-picker").value = dt.shortDate;
         document.getElementById("proj-form-owner").value = "閔松";
-        document.getElementById("proj-form-risk").value = "正常推展";
-        
         currentProjectPhotos = [];
         renderProjectPhotosPreview();
-
-        const checks = document.querySelectorAll(".ms-check");
-        if (checks[0]) checks[0].checked = true;
       }
     }
 
-    function closeProjectModal() {
-      document.getElementById("project-modal").classList.add("hidden");
-    }
-
-    function editProject(id) {
-      openProjectModal(id);
-    }
-
+    function closeProjectModal() { document.getElementById("project-modal").classList.add("hidden"); }
+    function editProject(id) { openProjectModal(id); }
     function calcProgressFromMilestones() {
       let sum = 0;
-      document.querySelectorAll(".ms-check:checked").forEach(cb => {
-        sum += Number(cb.value);
-      });
+      document.querySelectorAll(".ms-check:checked").forEach(cb => { sum += Number(cb.value); });
       document.getElementById("proj-form-progress").value = sum;
     }
 
     async function handleProjectSubmit(e) {
       e.preventDefault();
       if (!canEdit()) return;
-
       const id = document.getElementById("proj-form-id").value;
       const reportWeekVal = document.getElementById("proj-form-report-week").value.trim() || calculateCurrentWeekRange().workWeekStr;
       const deadlineDate = document.getElementById("proj-form-deadline-picker").value;
@@ -1481,7 +1463,7 @@
         risk: document.getElementById("proj-form-risk").value,
         photos: currentProjectPhotos,
         last_updated: dt.fullString,
-        update_user: currentSessionUser ? currentSessionUser.name : "系統管理員"
+        update_user: currentSessionUser.name
       };
 
       if (id) {
@@ -1491,49 +1473,34 @@
         data.id = Date.now();
         projects.unshift(data);
       }
-
       closeProjectModal();
       updateStats();
       renderProjects();
       await saveToCloud();
-      alert(`✓ 專案已成功儲存並同步更新至雲端！`);
+      alert(`✓ 專案已成功儲存並同步更新！`);
     }
 
     function openAcpModal() {
-      if (!canEdit()) {
-        alert("權限不足！只有管理員或編輯人員可填寫業務日報。");
-        return;
-      }
-
+      if (!canEdit()) { alert("權限不足！"); return; }
       document.getElementById("acp-modal").classList.remove("hidden");
       document.getElementById("acp-form").reset();
-      
       const dt = getSystemDateTime();
       document.getElementById("acp-today-hint").innerText = dt.zhDateOnly;
       document.getElementById("acp-date").value = dt.shortDate;
-      document.getElementById("acp-next-date").value = "";
-
       currentAcpPhotos = [];
       renderAcpPhotosPreview();
-      if (currentSessionUser) {
-        if (currentSessionUser.name.includes("閔松")) document.getElementById("acp-salesman").value = "閔松";
-        else if (currentSessionUser.name.includes("琮樺")) document.getElementById("acp-salesman").value = "琮樺";
-      }
     }
 
-    function closeAcpModal() {
-      document.getElementById("acp-modal").classList.add("hidden");
-    }
+    function closeAcpModal() { document.getElementById("acp-modal").classList.add("hidden"); }
 
     async function handleAcpSubmit(e) {
       e.preventDefault();
       if (!canEdit()) return;
-
       const pickDate = document.getElementById("acp-date").value;
       const todayStr = pickDate.replace(/-/g, '');
       const serial = String(acpReports.length + 1).padStart(3, '0');
       const dt = getSystemDateTime();
-      
+
       const report = {
         id: Date.now(),
         doc_no: `ACT-${todayStr}-${serial}`,
@@ -1567,7 +1534,7 @@
       if (list.length === 0) {
         container.innerHTML = `
           <div class="col-span-full py-16 text-center text-slate-500 text-xs space-y-3">
-            <div>查無相符專案，可能是週次篩選或暫存尚未載入</div>
+            <div>目前分類尚無專案或未符合當前週期篩選</div>
             <button onclick="forceRestoreOriginalData()" class="px-4 py-2 bg-amber-600 hover:bg-amber-500 text-white rounded-lg font-bold text-xs shadow transition">
               <i class="fa-solid fa-rotate-left mr-1"></i> 立即載入完整真實專案 (15筆水污 + 7筆空污)
             </button>
@@ -1585,34 +1552,27 @@
           <div class="mt-2.5 pt-2 border-t border-slate-700/50">
             <span class="text-[10px] text-slate-400 block mb-1.5"><i class="fa-solid fa-camera text-[9px] mr-1 text-emerald-400"></i>現場照片 (${p.photos.length}張)：</span>
             <div class="flex gap-1.5 overflow-x-auto pb-1">
-              ${p.photos.map(src => `
-                <img src="${src}" class="w-14 h-10 object-cover rounded border border-slate-700 cursor-pointer hover:border-emerald-400 flex-shrink-0 transition" onclick="openLightbox('${src}')">
-              `).join('')}
+              ${p.photos.map(src => `<img src="${src}" class="w-14 h-10 object-cover rounded border border-slate-700 cursor-pointer" onclick="openLightbox('${src}')">`).join('')}
             </div>
           </div>
         ` : '';
 
         return `
-          <div class="bg-slate-800/70 border ${st.border} rounded-xl p-4 sm:p-5 flex flex-col justify-between hover:border-slate-500 transition-all shadow-sm">
+          <div class="bg-slate-800/70 border ${st.border} rounded-xl p-4 sm:p-5 flex flex-col justify-between shadow-sm">
             <div>
               <div class="flex justify-between items-start gap-2 mb-2">
                 <div class="flex items-center gap-1.5 flex-wrap">
-                  <span class="text-[11px] px-2 py-0.5 rounded-full font-bold border ${cat.badge}">
-                    <i class="fa-solid ${cat.icon} mr-1"></i>${p.category}
-                  </span>
+                  <span class="text-[11px] px-2 py-0.5 rounded-full font-bold border ${cat.badge}"><i class="fa-solid ${cat.icon} mr-1"></i>${p.category}</span>
                   <span class="text-[11px] bg-slate-700/60 text-slate-300 px-1.5 py-0.5 rounded">${p.region}</span>
                 </div>
                 <span class="text-xs text-slate-300 font-medium"><i class="fa-solid fa-user-tie text-[10px] mr-1 text-slate-400"></i>${p.owner}</span>
               </div>
-
               <h3 class="text-sm font-bold text-white mb-2 leading-snug">${p.name}</h3>
-
               <div class="text-[11px] text-emerald-400 font-mono mb-3 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
                 <i class="fa-regular fa-calendar-check text-[10px]"></i>
                 <span class="font-bold">推進週期：</span>
                 <span class="truncate">${dispReportWeek}</span>
               </div>
-
               <div class="space-y-1 mb-3.5">
                 <div class="flex justify-between text-xs text-slate-400 font-mono">
                   <span>累計進度</span>
@@ -1622,9 +1582,8 @@
                   <div class="h-full ${st.bar} transition-all duration-500" style="width: ${p.progress}%"></div>
                 </div>
               </div>
-
               <div class="bg-slate-900/80 border border-slate-700/50 rounded-lg p-3 text-xs space-y-2 mb-3">
-                <p class="text-slate-200 leading-relaxed whitespace-pre-line"><span class="text-emerald-400 font-medium">最新動態：</span>\n${p.notes || "無特定備註"}</p>
+                <p class="text-slate-200 leading-relaxed whitespace-pre-line"><span class="text-emerald-400 font-medium">最新動態：</span>\n${p.notes || "無"}</p>
                 <div class="text-[11px] text-amber-400 flex items-center gap-1">
                   <i class="fa-solid fa-triangle-exclamation text-[10px]"></i>
                   <span>風險：${p.risk || "正常推展"}</span>
@@ -1632,16 +1591,11 @@
                 ${photosHtml}
               </div>
             </div>
-
             <div class="flex justify-between items-center text-xs text-slate-500 pt-2 border-t border-slate-700/50">
               <span class="font-mono">期程：${p.deadline || "依進度"}</span>
               <div class="space-x-2">
-                ${canEdit() ? `
-                  <button onclick="editProject(${p.id})" class="text-emerald-400 hover:text-emerald-300 font-medium"><i class="fa-solid fa-pen-to-square"></i> 編輯</button>
-                ` : ''}
-                ${canAdmin() ? `
-                  <button onclick="deleteProject(${p.id})" class="text-rose-400 hover:text-rose-300 font-medium"><i class="fa-solid fa-trash"></i> 刪除</button>
-                ` : ''}
+                ${canEdit() ? `<button onclick="editProject(${p.id})" class="text-emerald-400 font-medium"><i class="fa-solid fa-pen-to-square"></i> 編輯</button>` : ''}
+                ${canAdmin() ? `<button onclick="deleteProject(${p.id})" class="text-rose-400 font-medium"><i class="fa-solid fa-trash"></i> 刪除</button>` : ''}
               </div>
             </div>
           </div>
@@ -1652,140 +1606,73 @@
     function renderAcpReports() {
       const tbody = document.getElementById("acp-reports-tbody");
       const empty = document.getElementById("empty-acp-report");
-
-      if (acpReports.length === 0) {
-        tbody.innerHTML = "";
-        empty.classList.remove("hidden");
-        return;
-      }
+      if (acpReports.length === 0) { tbody.innerHTML = ""; empty.classList.remove("hidden"); return; }
       empty.classList.add("hidden");
-
-      tbody.innerHTML = acpReports.map(d => {
-        const photosHtml = (d.photos && d.photos.length > 0) ? `
-          <div class="flex gap-1 mt-1.5 overflow-x-auto">
-            ${d.photos.map(src => `
-              <img src="${src}" class="w-10 h-8 object-cover rounded border border-slate-700 cursor-pointer hover:border-emerald-400 flex-shrink-0" onclick="openLightbox('${src}')">
-            `).join('')}
-          </div>
-        ` : '';
-
-        return `
-          <tr class="hover:bg-slate-800/40 transition">
-            <td class="py-3 px-3.5">
-              <div class="font-mono text-emerald-400 font-semibold">${d.doc_no || 'ACT-' + d.id}</div>
-              <div class="text-[11px] text-slate-400 font-mono">${d.date}</div>
-            </td>
-            <td class="py-3 px-3">
-              <div class="font-bold text-white">${d.salesman}</div>
-              <div class="text-[10px] text-slate-400">${d.dept || "業務部"}</div>
-            </td>
-            <td class="py-3 px-3">
-              <span class="px-2 py-0.5 rounded text-[11px] bg-emerald-500/10 text-emerald-400 border border-emerald-500/20 font-medium whitespace-nowrap">${d.act_type}</span>
-            </td>
-            <td class="py-3 px-3.5">
-              <div class="font-bold text-white">${d.cust_name}</div>
-              <div class="text-[11px] text-slate-400">${d.contact || "—"} | ${d.phone || "—"}</div>
-            </td>
-            <td class="py-3 px-3 text-amber-300 font-medium whitespace-nowrap">${d.stage}</td>
-            <td class="py-3 px-4 max-w-sm text-slate-200 leading-relaxed whitespace-pre-line">
-              <div>${d.content}</div>
-              ${photosHtml}
-            </td>
-            <td class="py-3 px-3">
-              <div class="font-mono text-emerald-400">${d.next_date || "—"}</div>
-              <div class="text-[10px] text-slate-400">${d.next_action || ""}</div>
-            </td>
-            <td class="py-3 px-3 text-right no-print">
-              ${canAdmin() ? `<button onclick="deleteAcpReport(${d.id})" class="text-rose-400 hover:text-rose-300 p-1" title="刪除日報"><i class="fa-solid fa-trash"></i></button>` : '—'}
-            </td>
-          </tr>
-        `;
-      }).join('');
+      tbody.innerHTML = acpReports.map(d => `
+        <tr class="hover:bg-slate-800/40 transition">
+          <td class="py-3 px-3.5"><div class="font-mono text-emerald-400 font-semibold">${d.doc_no}</div><div class="text-[11px] text-slate-400 font-mono">${d.date}</div></td>
+          <td class="py-3 px-3"><div class="font-bold text-white">${d.salesman}</div></td>
+          <td class="py-3 px-3"><span class="px-2 py-0.5 rounded text-[11px] bg-emerald-500/10 text-emerald-400 border">${d.act_type}</span></td>
+          <td class="py-3 px-3.5"><div class="font-bold text-white">${d.cust_name}</div></td>
+          <td class="py-3 px-3 text-amber-300 font-medium">${d.stage}</td>
+          <td class="py-3 px-4 max-w-sm text-slate-200 whitespace-pre-line">${d.content}</td>
+          <td class="py-3 px-3"><div class="font-mono text-emerald-400">${d.next_date || "—"}</div></td>
+          <td class="py-3 px-3 text-right">${canAdmin() ? `<button onclick="deleteAcpReport(${d.id})" class="text-rose-400"><i class="fa-solid fa-trash"></i></button>` : '—'}</td>
+        </tr>
+      `).join('');
     }
 
-    // 寬鬆篩選與模糊比對
     function getFilteredProjects() {
       const targetCat = currentMainTab === 'water' ? '水污專案' : '空污專案';
       const search = (document.getElementById("project-search")?.value || "").trim().toLowerCase();
       const status = document.getElementById("status-filter")?.value || "ALL";
 
       return projects.filter(p => {
-        let matchCategory = false;
-        if (targetCat === '水污專案') {
-          matchCategory = p.category === '水污專案' || p.category === '廠內工程' || !p.category;
-        } else {
-          matchCategory = p.category === '空污專案';
-        }
-
+        let matchCategory = targetCat === '水污專案' ? (p.category === '水污專案' || p.category === '廠內工程' || !p.category) : (p.category === '空污專案');
         const matchStatus = status === "ALL" ? true : p.status === status;
-        const matchSearch = (p.name || "").toLowerCase().includes(search) ||
-          (p.owner || "").toLowerCase().includes(search) ||
-          (p.region || "").toLowerCase().includes(search) ||
-          (p.notes || "").toLowerCase().includes(search);
-
-        let matchWeek = true;
-        if (selectedWeeks.length > 0) {
-          const targetW = selectedWeeks[0].replace(/\s+/g, '');
-          const pWeek = (p.report_week || "").replace(/\s+/g, '');
-          matchWeek = pWeek.includes(targetW) || targetW.includes(pWeek) || targetW.includes("全部");
-        }
-        return matchCategory && matchStatus && matchSearch && matchWeek;
+        const matchSearch = (p.name || "").toLowerCase().includes(search) || (p.owner || "").toLowerCase().includes(search) || (p.notes || "").toLowerCase().includes(search);
+        return matchCategory && matchStatus && matchSearch;
       });
     }
 
     function updateStats() {
       const targetCat = currentMainTab === 'water' ? '水污專案' : '空污專案';
       const currentCategoryProjects = projects.filter(p => p.category === targetCat || (targetCat === '水污專案' && p.category === '廠內工程'));
-      
       const total = currentCategoryProjects.length;
       const onGoingCount = currentCategoryProjects.filter(p => p.status === "進行中").length;
       const evalCount = currentCategoryProjects.filter(p => p.status === "評估中").length;
       const avgPct = total ? (currentCategoryProjects.reduce((acc, p) => acc + Number(p.progress || 0), 0) / total).toFixed(1) : 0;
 
-      const sTotal = document.getElementById("stat-total");
-      if (sTotal) sTotal.innerText = total;
-      const sOngoing = document.getElementById("stat-ongoing");
-      if (sOngoing) sOngoing.innerText = onGoingCount;
-      const sEval = document.getElementById("stat-eval");
-      if (sEval) sEval.innerText = evalCount;
-      const sAvg = document.getElementById("stat-avg-pct");
-      if (sAvg) sAvg.innerText = avgPct + "%";
+      if (document.getElementById("stat-total")) document.getElementById("stat-total").innerText = total;
+      if (document.getElementById("stat-ongoing")) document.getElementById("stat-ongoing").innerText = onGoingCount;
+      if (document.getElementById("stat-eval")) document.getElementById("stat-eval").innerText = evalCount;
+      if (document.getElementById("stat-avg-pct")) document.getElementById("stat-avg-pct").innerText = avgPct + "%";
     }
 
     async function saveToCloud(isSilent = false) {
       localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
       localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
-
       try {
         await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: "PUT",
-          headers: {
-            "Content-Type": "application/json",
-            "X-Master-Key": API_KEY
-          },
+          headers: { "Content-Type": "application/json", "X-Master-Key": API_KEY },
           body: JSON.stringify({ projects, acpReports, systemUsers })
         });
       } catch (err) {}
     }
 
     function compressImage(file, maxWidth = 800, quality = 0.7) {
-      return new Promise((resolve, reject) => {
+      return new Promise((resolve) => {
         const reader = new FileReader();
         reader.onload = e => {
           const img = new Image();
           img.onload = () => {
             const canvas = document.createElement('canvas');
-            let w = img.width;
-            let h = img.height;
-            if (w > maxWidth) {
-              h = Math.round((h * maxWidth) / w);
-              w = maxWidth;
-            }
-            canvas.width = w;
-            canvas.height = h;
-            const ctx = canvas.getContext('2d');
-            ctx.drawImage(img, 0, 0, w, h);
+            let w = img.width, h = img.height;
+            if (w > maxWidth) { h = Math.round((h * maxWidth) / w); w = maxWidth; }
+            canvas.width = w; canvas.height = h;
+            canvas.getContext('2d').drawImage(img, 0, 0, w, h);
             resolve(canvas.toDataURL('image/jpeg', quality));
           };
           img.src = e.target.result;
@@ -1802,55 +1689,32 @@
         if (type === 'proj') currentProjectPhotos.push(comp);
         else currentAcpPhotos.push(comp);
       }
-      if (type === 'proj') renderProjectPhotosPreview();
-      else renderAcpPhotosPreview();
+      if (type === 'proj') renderProjectPhotosPreview(); else renderAcpPhotosPreview();
       e.target.value = "";
     }
 
     function renderProjectPhotosPreview() {
-      const container = document.getElementById("proj-photos-container");
-      container.innerHTML = currentProjectPhotos.map((src, idx) => `
+      document.getElementById("proj-photos-container").innerHTML = currentProjectPhotos.map((src, idx) => `
         <div class="relative group rounded-lg overflow-hidden border border-slate-700 aspect-video bg-slate-950">
           <img src="${src}" class="w-full h-full object-cover">
-          <button type="button" onclick="currentProjectPhotos.splice(${idx},1);renderProjectPhotosPreview();" class="absolute top-1 right-1 bg-rose-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+          <button type="button" onclick="currentProjectPhotos.splice(${idx},1);renderProjectPhotosPreview();" class="absolute top-1 right-1 bg-rose-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-xmark"></i></button>
         </div>
       `).join('');
     }
 
     function renderAcpPhotosPreview() {
-      const container = document.getElementById("acp-photos-container");
-      container.innerHTML = currentAcpPhotos.map((src, idx) => `
+      document.getElementById("acp-photos-container").innerHTML = currentAcpPhotos.map((src, idx) => `
         <div class="relative group rounded-lg overflow-hidden border border-slate-700 aspect-video bg-slate-950">
           <img src="${src}" class="w-full h-full object-cover">
-          <button type="button" onclick="currentAcpPhotos.splice(${idx},1);renderAcpPhotosPreview();" class="absolute top-1 right-1 bg-rose-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]">
-            <i class="fa-solid fa-xmark"></i>
-          </button>
+          <button type="button" onclick="currentAcpPhotos.splice(${idx},1);renderAcpPhotosPreview();" class="absolute top-1 right-1 bg-rose-600 text-white w-5 h-5 rounded-full flex items-center justify-center text-[10px]"><i class="fa-solid fa-xmark"></i></button>
         </div>
       `).join('');
     }
 
-    function openLightbox(src) {
-      document.getElementById("lightbox-img").src = src;
-      document.getElementById("image-lightbox").classList.remove("hidden");
-    }
-
-    function closeLightbox() {
-      document.getElementById("image-lightbox").classList.add("hidden");
-    }
-
-    // Google Webhook
-    function openGoogleSyncModal() {
-      if (!canAdmin()) return;
-      document.getElementById("google-modal").classList.remove("hidden");
-      document.getElementById("gas-url-input").value = localStorage.getItem(STORAGE_KEY_GAS) || "";
-    }
-
-    function closeGoogleSyncModal() {
-      document.getElementById("google-modal").classList.add("hidden");
-    }
-
+    function openLightbox(src) { document.getElementById("lightbox-img").src = src; document.getElementById("image-lightbox").classList.remove("hidden"); }
+    function closeLightbox() { document.getElementById("image-lightbox").classList.add("hidden"); }
+    function openGoogleSyncModal() { if (!canAdmin()) return; document.getElementById("google-modal").classList.remove("hidden"); document.getElementById("gas-url-input").value = localStorage.getItem(STORAGE_KEY_GAS) || ""; }
+    function closeGoogleSyncModal() { document.getElementById("google-modal").classList.add("hidden"); }
     async function saveGoogleGasUrl() {
       const url = document.getElementById("gas-url-input").value.trim();
       if (!url) return;
@@ -1860,19 +1724,8 @@
       alert("✓ Google 試算表同步網址已儲存！");
     }
 
-    // 檔案拖曳與解析模組
-    function openImportModal() {
-      if (!canEdit()) return;
-      document.getElementById("import-modal").classList.remove("hidden");
-      document.getElementById("import-file-input").value = "";
-      document.getElementById("import-preview-box").classList.add("hidden");
-      document.getElementById("confirm-import-btn").disabled = true;
-      parsedImportData = [];
-    }
-
-    function closeImportModal() {
-      document.getElementById("import-modal").classList.add("hidden");
-    }
+    function openImportModal() { if (!canEdit()) return; document.getElementById("import-modal").classList.remove("hidden"); document.getElementById("import-preview-box").classList.add("hidden"); document.getElementById("confirm-import-btn").disabled = true; parsedImportData = []; }
+    function closeImportModal() { document.getElementById("import-modal").classList.add("hidden"); }
 
     function setupDragAndDrop() {
       const dropArea = document.getElementById("drop-area");
@@ -1886,42 +1739,28 @@
       }, false);
     }
 
-    function handleFileSelected(e) {
-      if (e.target.files.length > 0) processFile(e.target.files[0]);
-    }
+    function handleFileSelected(e) { if (e.target.files.length > 0) processFile(e.target.files[0]); }
 
     async function processFile(file) {
       const ext = file.name.split('.').pop().toLowerCase();
       document.getElementById("import-filename").innerText = file.name;
       parsedImportData = [];
-
       try {
         if (ext === 'xlsx' || ext === 'xls') {
           const data = await file.arrayBuffer();
           const workbook = XLSX.read(data, { type: 'array' });
           parsedImportData = parseWorkbook(workbook);
-        } else if (ext === 'docx') {
-          const arrayBuffer = await file.arrayBuffer();
-          const result = await mammoth.extractRawText({ arrayBuffer: arrayBuffer });
-          parsedImportData = parseTextDoc(result.value, file.name);
-        } else if (ext === 'txt') {
-          const text = await file.text();
+        } else if (ext === 'docx' || ext === 'txt') {
+          const text = ext === 'docx' ? await mammoth.extractRawText({ arrayBuffer: await file.arrayBuffer() }).then(r => r.value) : await file.text();
           parsedImportData = parseTextDoc(text, file.name);
         }
-
         if (parsedImportData.length > 0) {
           document.getElementById("import-preview-box").classList.remove("hidden");
           document.getElementById("import-count-badge").innerText = `解析出 ${parsedImportData.length} 筆專案`;
-          document.getElementById("import-preview-list").innerHTML = parsedImportData.map(p => `
-            <div>[${p.category}] ${p.name} (${p.owner} | ${p.progress}%)</div>
-          `).join('');
+          document.getElementById("import-preview-list").innerHTML = parsedImportData.map(p => `<div>[${p.category}] ${p.name} (${p.owner})</div>`).join('');
           document.getElementById("confirm-import-btn").disabled = false;
-        } else {
-          alert("未能解析出專案資料，請檢查檔案格式！");
-        }
-      } catch (err) {
-        alert("解析失敗：" + err.message);
-      }
+        } else { alert("未能解析出專案資料！"); }
+      } catch (err) { alert("解析失敗：" + err.message); }
     }
 
     function parseWorkbook(workbook) {
@@ -1934,7 +1773,6 @@
           if (!row || row.length === 0) continue;
           const name = String(row[1] || row[0] || "").trim();
           if (!name || name.includes("總計") || name.length < 2) continue;
-
           results.push({
             id: Date.now() + results.length,
             category: (sheetName.includes("VOC") || name.includes("沸石")) ? "空污專案" : "水污專案",
@@ -1946,7 +1784,7 @@
             report_week: calculateCurrentWeekRange().workWeekStr,
             deadline: "依進度",
             weeks: [calculateCurrentWeekRange().workWeekStr],
-            notes: String(row[row.length - 1] || "匯入檔案更新"),
+            notes: String(row[row.length - 1] || "匯入更新"),
             risk: "正常推展",
             photos: []
           });
@@ -1977,7 +1815,6 @@
     async function executeImport() {
       if (parsedImportData.length === 0) return;
       const mode = document.querySelector('input[name="import-mode"]:checked').value;
-
       if (mode === 'overwrite') {
         if (!canAdmin()) { alert("只有管理員可覆蓋！"); return; }
         projects = parsedImportData;
@@ -1992,7 +1829,6 @@
           }
         });
       }
-
       closeImportModal();
       updateStats();
       renderProjects();
