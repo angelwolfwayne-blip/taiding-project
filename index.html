@@ -1955,3 +1955,23 @@
           document.getElementById("import-preview-list").innerHTML = parsedImportData.map(p => `<div>[${p.category}] ${p.name} (${p.owner})</div>`).join('');
           document.getElementById("confirm-import-btn").disabled = false;
         } else { alert("未能解析出專案資料！"); }
+        function startRealtimeClock() {
+      function updateClock() {
+        try {
+          const dt = getSystemDateTime();
+          const liveElem = document.getElementById("live-time-display");
+          if (liveElem) liveElem.innerText = dt.fullString;
+        } catch (e) {}
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    // 確保 init 函式裡面有呼叫它
+    async function init() {
+      startRealtimeClock(); // ← 這裡要確保有執行這行
+      // ... 其他初始化程式碼 ...
+    }
+
+    window.onload = init;
+  </script>
