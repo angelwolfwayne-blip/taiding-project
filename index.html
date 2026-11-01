@@ -1956,6 +1956,27 @@
           document.getElementById("confirm-import-btn").disabled = false;
         } else { alert("未能解析出專案資料！"); }
         function startRealtimeClock() {
+      // ================= 即時時鐘與日期函式 =================
+    const WEEK_DAYS_ZH = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    function padZero(num) { return String(num).padStart(2, '0'); }
+
+    function getSystemDateTime() {
+      const now = new Date();
+      const rocYear = now.getFullYear() - 1911;
+      const y = now.getFullYear();
+      const m = now.getMonth() + 1;
+      const d = now.getDate();
+      const dayZh = WEEK_DAYS_ZH[now.getDay()];
+      const hh = padZero(now.getHours());
+      const mm = padZero(now.getMinutes());
+      const ss = padZero(now.getSeconds());
+      const fullString = `民國 ${rocYear} 年 ${m} 月 ${d} 日 (${y}) ${hh}:${mm}:${ss} ${dayZh}`;
+      const shortDate = `${y}-${padZero(m)}-${padZero(d)}`;
+      const zhDateOnly = `民國 ${rocYear} 年 ${m} 月 ${d} 日 ${dayZh}`;
+      return { now, rocYear, y, m, d, dayZh, hh, mm, ss, fullString, shortDate, zhDateOnly };
+    }
+
+    function startRealtimeClock() {
       function updateClock() {
         try {
           const dt = getSystemDateTime();
@@ -1967,11 +1988,14 @@
       setInterval(updateClock, 1000);
     }
 
-    // 確保 init 函式裡面有呼叫它
+    // 確保 init 函式有執行它
     async function init() {
-      startRealtimeClock(); // ← 這裡要確保有執行這行
-      // ... 其他初始化程式碼 ...
+      startRealtimeClock(); // 讓時鐘啟動
+      // ... 其他初始化程式 ...
     }
 
+    // 檔案最底部
+    window.onload = init;
+  </script>
     window.onload = init;
   </script>
