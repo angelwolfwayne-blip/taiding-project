@@ -6,7 +6,6 @@
   <title>溙鼎環境科技 - 專案管理暨業務日報系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
-  <!-- Excel 與 Word 解析套件 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <style>
@@ -96,7 +95,7 @@
     </div>
   </header>
 
-  <!-- ★ 新增：內部人員專用警示與管理員聯繫資訊橫幅 ★ -->
+  <!-- 內部人員專用警示與管理員聯繫資訊橫幅 -->
   <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 no-print">
     <div class="bg-slate-800/90 border border-amber-500/30 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs shadow-sm">
       <div class="flex items-center gap-2 text-amber-300 font-bold">
@@ -362,7 +361,6 @@
           </div>
         </div>
 
-        <!-- 最新週期與行事曆 -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-emerald-400 mb-1 font-bold flex items-center justify-between">
@@ -611,14 +609,6 @@
           <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold">登入系統</button>
         </div>
       </form>
-
-      <!-- ★ 新增：登入彈窗底部的管理者聯絡資訊 ★ -->
-      <div class="pt-3 border-t border-slate-700/80 text-[11px] text-slate-400 space-y-1">
-        <div class="text-amber-400 font-semibold"><i class="fa-solid fa-lock mr-1"></i> 僅限溙鼎內部人員登入</div>
-        <div>若帳號遺忘或有任何問題請聯繫管理員：</div>
-        <div class="font-mono text-emerald-400 select-all">Email: s0982990034@gmail.com</div>
-        <div class="font-mono text-cyan-400 select-all">電話: 06-2330668 分機 37</div>
-      </div>
     </div>
   </div>
 
@@ -657,12 +647,9 @@
   <div id="user-mgmt-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <div>
-          <h3 class="text-base font-bold text-white flex items-center gap-2">
-            <i class="fa-solid fa-users-gear text-purple-400"></i> 全公司人員帳號權限管理
-          </h3>
-          <p class="text-xs text-slate-400">分配管理員 (Admin)、可編輯人員 (Editor)、可檢視人員 (Viewer)</p>
-        </div>
+        <h3 class="text-base font-bold text-white flex items-center gap-2">
+          <i class="fa-solid fa-users-gear text-purple-400"></i> 全公司人員帳號權限管理
+        </h3>
         <button onclick="closeUserManagerModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <form onsubmit="handleCreateUser(event)" class="bg-slate-900/90 border border-purple-500/30 p-3.5 rounded-xl space-y-3 text-xs">
@@ -945,12 +932,12 @@
       }
     ];
 
-    // 強制修復載入資料函式 (可手動按，也可在陣列為空時自動呼叫)
     function forceRestoreOriginalData() {
       projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
       acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
       selectedWeeks = [];
-      document.getElementById("selected-week-label").innerText = "全部週次 (不限)";
+      const label = document.getElementById("selected-week-label");
+      if (label) label.innerText = "全部週次 (不限)";
       
       localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
       localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
@@ -962,17 +949,17 @@
       alert("✓ 已強制修復並載入 15 筆水污 + 7 筆空污真實專案！");
     }
 
-    // 啟動初始化 (加入防空資料自動注入)
+    // 初始化函式：強制寫入真實資料
     async function init() {
       startRealtimeClock();
 
       const curWeek = calculateCurrentWeekRange();
-      document.getElementById("current-week-banner").innerText = curWeek.workWeekStr;
-      document.getElementById("calc-current-week-btn-text").innerText = curWeek.workWeekStr;
+      const banner = document.getElementById("current-week-banner");
+      if (banner) banner.innerText = curWeek.workWeekStr;
 
       buildYearSelectOptions();
 
-      // 載入使用者權限
+      // 使用者身分驗證
       const localUsers = localStorage.getItem(STORAGE_KEY_USERS);
       if (localUsers) {
         try { systemUsers = JSON.parse(localUsers); } catch(e){}
@@ -993,26 +980,27 @@
 
       applyRbacUI();
 
-      // 載入專案資料：若本機為空則直接給予全套真實資料
+      // 先讀本機資料
       const localProj = localStorage.getItem(STORAGE_KEY_PROJ);
-      const localAcp = localStorage.getItem(STORAGE_KEY_ACP);
       if (localProj) {
-        try { 
+        try {
           const parsed = JSON.parse(localProj);
           if (Array.isArray(parsed) && parsed.length > 0) projects = parsed;
         } catch(e){}
       }
-      if (localAcp) {
-        try { 
-          const parsedAcp = JSON.parse(localAcp);
-          if (Array.isArray(parsedAcp) && parsedAcp.length > 0) acpReports = parsedAcp;
-        } catch(e){}
-      }
 
-      // ★ 核心防禦：如果專案為空，強制注入真實專案資料 ★
+      // 若為空陣列，立刻強制載入保底專案
       if (!projects || projects.length === 0) {
         projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
         localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
+      }
+
+      const localAcp = localStorage.getItem(STORAGE_KEY_ACP);
+      if (localAcp) {
+        try {
+          const parsedAcp = JSON.parse(localAcp);
+          if (Array.isArray(parsedAcp) && parsedAcp.length > 0) acpReports = parsedAcp;
+        } catch(e){}
       }
       if (!acpReports || acpReports.length === 0) {
         acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
@@ -1024,46 +1012,7 @@
       updateStats();
       renderProjects();
       renderAcpReports();
-
-      // 嘗試雲端連線同步 (3秒超時保護)
-      syncCloudWithTimeout();
-    }
-
-    async function syncCloudWithTimeout() {
-      const syncElem = document.getElementById("sync-status");
-      try {
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 3000);
-
-        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
-          headers: { "X-Master-Key": API_KEY },
-          signal: controller.signal
-        });
-        clearTimeout(timeoutId);
-
-        if (res.ok) {
-          const data = await res.json();
-          if (data && data.record && data.record.projects && data.record.projects.length > 0) {
-            projects = data.record.projects;
-            localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
-            if (data.record.acpReports) {
-              acpReports = data.record.acpReports;
-              localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
-            }
-            updateStats();
-            renderProjects();
-            renderAcpReports();
-          }
-          if (syncElem) {
-            syncElem.className = "flex items-center gap-1.5 font-medium text-emerald-400";
-            syncElem.innerHTML = '<i class="fa-solid fa-circle text-[8px]"></i> 雲端連線同步 (OK)';
-          }
-        } else {
-          fallbackToLocalReady();
-        }
-      } catch (err) {
-        fallbackToLocalReady();
-      }
+      fallbackToLocalReady();
     }
 
     function fallbackToLocalReady() {
@@ -1076,6 +1025,7 @@
 
     function buildYearSelectOptions() {
       const select = document.getElementById("filter-year-select");
+      if (!select) return;
       let html = "";
       for (let y = 2025; y <= 2031; y++) {
         html += `<option value="${y}" ${y === 2026 ? 'selected' : ''}>${y} 年 (民國 ${y-1911} 年)</option>`;
@@ -1103,41 +1053,47 @@
       const addDailyBtn = document.getElementById("add-daily-btn");
 
       if (currentSessionUser) {
-        loginBtn.classList.add("hidden");
-        profileBadge.classList.remove("hidden");
-        profileBadge.classList.add("flex");
-        document.getElementById("badge-name").innerText = currentSessionUser.name;
+        if (loginBtn) loginBtn.classList.add("hidden");
+        if (profileBadge) {
+          profileBadge.classList.remove("hidden");
+          profileBadge.classList.add("flex");
+        }
+        const bName = document.getElementById("badge-name");
+        if (bName) bName.innerText = currentSessionUser.name;
         const roleInfo = ROLE_MAP[currentSessionUser.role] || ROLE_MAP["VIEWER"];
-        document.getElementById("badge-role").innerText = roleInfo.label;
+        const bRole = document.getElementById("badge-role");
+        if (bRole) bRole.innerText = roleInfo.label;
 
-        actionPanel.classList.remove("hidden");
-        document.getElementById("panel-user-name").innerText = currentSessionUser.name;
-        document.getElementById("panel-user-role").innerText = roleInfo.label;
+        if (actionPanel) actionPanel.classList.remove("hidden");
+        const pName = document.getElementById("panel-user-name");
+        if (pName) pName.innerText = currentSessionUser.name;
+        const pRole = document.getElementById("panel-user-role");
+        if (pRole) pRole.innerText = roleInfo.label;
 
         if (currentSessionUser.role === "ADMIN") {
-          adminUsersBtn.classList.remove("hidden");
-          adminGoogleBtn.classList.remove("hidden");
-          adminImportBtn.classList.remove("hidden");
-          editorAddBtn.classList.remove("hidden");
-          addDailyBtn.classList.remove("hidden");
+          if (adminUsersBtn) adminUsersBtn.classList.remove("hidden");
+          if (adminGoogleBtn) adminGoogleBtn.classList.remove("hidden");
+          if (adminImportBtn) adminImportBtn.classList.remove("hidden");
+          if (editorAddBtn) editorAddBtn.classList.remove("hidden");
+          if (addDailyBtn) addDailyBtn.classList.remove("hidden");
         } else if (currentSessionUser.role === "EDITOR") {
-          adminUsersBtn.classList.add("hidden");
-          adminGoogleBtn.classList.add("hidden");
-          adminImportBtn.classList.remove("hidden");
-          editorAddBtn.classList.remove("hidden");
-          addDailyBtn.classList.remove("hidden");
+          if (adminUsersBtn) adminUsersBtn.classList.add("hidden");
+          if (adminGoogleBtn) adminGoogleBtn.classList.add("hidden");
+          if (adminImportBtn) adminImportBtn.classList.remove("hidden");
+          if (editorAddBtn) editorAddBtn.classList.remove("hidden");
+          if (addDailyBtn) addDailyBtn.classList.remove("hidden");
         } else {
-          adminUsersBtn.classList.add("hidden");
-          adminGoogleBtn.classList.add("hidden");
-          adminImportBtn.classList.add("hidden");
-          editorAddBtn.classList.add("hidden");
-          addDailyBtn.classList.add("hidden");
+          if (adminUsersBtn) adminUsersBtn.classList.add("hidden");
+          if (adminGoogleBtn) adminGoogleBtn.classList.add("hidden");
+          if (adminImportBtn) adminImportBtn.classList.add("hidden");
+          if (editorAddBtn) editorAddBtn.classList.add("hidden");
+          if (addDailyBtn) addDailyBtn.classList.add("hidden");
         }
       } else {
-        loginBtn.classList.remove("hidden");
-        profileBadge.classList.add("hidden");
-        actionPanel.classList.add("hidden");
-        addDailyBtn.classList.add("hidden");
+        if (loginBtn) loginBtn.classList.remove("hidden");
+        if (profileBadge) profileBadge.classList.add("hidden");
+        if (actionPanel) actionPanel.classList.add("hidden");
+        if (addDailyBtn) addDailyBtn.classList.add("hidden");
       }
     }
 
@@ -1360,6 +1316,7 @@
 
     function renderWeekCheckboxes(year) {
       const container = document.getElementById("week-checkboxes-container");
+      if (!container) return;
       let list = (year === 'ALL') ? ALL_WEEKS : (WEEKS_BY_YEAR[year] || []);
       const curWeek = calculateCurrentWeekRange();
 
@@ -1405,13 +1362,15 @@
     function selectCurrentCalculatedWeek() {
       const curWeek = calculateCurrentWeekRange();
       selectedWeeks = [curWeek.workWeekStr];
-      document.getElementById("selected-week-label").innerText = curWeek.workWeekStr;
+      const label = document.getElementById("selected-week-label");
+      if (label) label.innerText = curWeek.workWeekStr;
       renderProjects();
     }
 
     function clearWeekFilter() {
       selectedWeeks = [];
-      document.getElementById("selected-week-label").innerText = "全部週次 (不限)";
+      const label = document.getElementById("selected-week-label");
+      if (label) label.innerText = "全部週次 (不限)";
       renderWeekCheckboxes(currentYearFilter);
       renderProjects();
     }
@@ -1522,7 +1481,7 @@
         risk: document.getElementById("proj-form-risk").value,
         photos: currentProjectPhotos,
         last_updated: dt.fullString,
-        update_user: currentSessionUser.name
+        update_user: currentSessionUser ? currentSessionUser.name : "系統管理員"
       };
 
       if (id) {
@@ -1683,9 +1642,6 @@
                 ${canAdmin() ? `
                   <button onclick="deleteProject(${p.id})" class="text-rose-400 hover:text-rose-300 font-medium"><i class="fa-solid fa-trash"></i> 刪除</button>
                 ` : ''}
-                ${!canEdit() ? `
-                  <span class="text-[10px] text-slate-500"><i class="fa-solid fa-eye text-[9px] mr-1"></i>僅供檢視</span>
-                ` : ''}
               </div>
             </div>
           </div>
@@ -1750,16 +1706,22 @@
     // 寬鬆篩選與模糊比對
     function getFilteredProjects() {
       const targetCat = currentMainTab === 'water' ? '水污專案' : '空污專案';
-      const search = document.getElementById("project-search").value.trim().toLowerCase();
-      const status = document.getElementById("status-filter").value;
+      const search = (document.getElementById("project-search")?.value || "").trim().toLowerCase();
+      const status = document.getElementById("status-filter")?.value || "ALL";
 
       return projects.filter(p => {
-        const matchCategory = (targetCat === '水污專案') ? (p.category === '水污專案' || p.category === '廠內工程') : (p.category === '空污專案');
+        let matchCategory = false;
+        if (targetCat === '水污專案') {
+          matchCategory = p.category === '水污專案' || p.category === '廠內工程' || !p.category;
+        } else {
+          matchCategory = p.category === '空污專案';
+        }
+
         const matchStatus = status === "ALL" ? true : p.status === status;
-        const matchSearch = p.name.toLowerCase().includes(search) ||
-          p.owner.toLowerCase().includes(search) ||
-          (p.region && p.region.toLowerCase().includes(search)) ||
-          (p.notes && p.notes.toLowerCase().includes(search));
+        const matchSearch = (p.name || "").toLowerCase().includes(search) ||
+          (p.owner || "").toLowerCase().includes(search) ||
+          (p.region || "").toLowerCase().includes(search) ||
+          (p.notes || "").toLowerCase().includes(search);
 
         let matchWeek = true;
         if (selectedWeeks.length > 0) {
@@ -1780,10 +1742,14 @@
       const evalCount = currentCategoryProjects.filter(p => p.status === "評估中").length;
       const avgPct = total ? (currentCategoryProjects.reduce((acc, p) => acc + Number(p.progress || 0), 0) / total).toFixed(1) : 0;
 
-      document.getElementById("stat-total").innerText = total;
-      document.getElementById("stat-ongoing").innerText = onGoingCount;
-      document.getElementById("stat-eval").innerText = evalCount;
-      document.getElementById("stat-avg-pct").innerText = avgPct + "%";
+      const sTotal = document.getElementById("stat-total");
+      if (sTotal) sTotal.innerText = total;
+      const sOngoing = document.getElementById("stat-ongoing");
+      if (sOngoing) sOngoing.innerText = onGoingCount;
+      const sEval = document.getElementById("stat-eval");
+      if (sEval) sEval.innerText = evalCount;
+      const sAvg = document.getElementById("stat-avg-pct");
+      if (sAvg) sAvg.innerText = avgPct + "%";
     }
 
     async function saveToCloud(isSilent = false) {
@@ -1798,7 +1764,7 @@
             "Content-Type": "application/json",
             "X-Master-Key": API_KEY
           },
-          body: JSON.stringify({ projects: projects, acpReports: acpReports, systemUsers: systemUsers })
+          body: JSON.stringify({ projects, acpReports, systemUsers })
         });
       } catch (err) {}
     }
