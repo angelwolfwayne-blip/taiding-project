@@ -6,6 +6,7 @@
   <title>溙鼎環境科技 - 專案管理暨業務日報系統</title>
   <script src="https://cdn.tailwindcss.com"></script>
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+  <!-- Excel 與 Word 解析套件 -->
   <script src="https://cdnjs.cloudflare.com/ajax/libs/xlsx/0.18.5/xlsx.full.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/mammoth/1.6.0/mammoth.browser.min.js"></script>
   <style>
@@ -94,6 +95,25 @@
       </div>
     </div>
   </header>
+
+  <!-- ★ 新增：內部人員專用警示與管理員聯繫資訊橫幅 ★ -->
+  <div class="max-w-7xl mx-auto px-4 sm:px-6 pt-4 no-print">
+    <div class="bg-slate-800/90 border border-amber-500/30 rounded-xl p-3 flex flex-col sm:flex-row items-center justify-between gap-2 text-xs shadow-sm">
+      <div class="flex items-center gap-2 text-amber-300 font-bold">
+        <i class="fa-solid fa-triangle-exclamation text-amber-400 text-sm"></i>
+        <span>僅限溙鼎環境科技股份有限公司內部工作人員使用</span>
+      </div>
+      <div class="flex flex-wrap items-center gap-3 text-slate-300 font-mono text-[11px]">
+        <span>若有任何問題請聯繫管理員：</span>
+        <a href="mailto:s0982990034@gmail.com" class="text-emerald-400 hover:underline flex items-center gap-1">
+          <i class="fa-solid fa-envelope text-[10px]"></i> s0982990034@gmail.com
+        </a>
+        <a href="tel:06-2330668" class="text-cyan-400 hover:underline flex items-center gap-1">
+          <i class="fa-solid fa-phone text-[10px]"></i> 06-2330668 分機 37
+        </a>
+      </div>
+    </div>
+  </div>
 
   <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
 
@@ -342,6 +362,7 @@
           </div>
         </div>
 
+        <!-- 最新週期與行事曆 -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-emerald-400 mb-1 font-bold flex items-center justify-between">
@@ -590,6 +611,14 @@
           <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold">登入系統</button>
         </div>
       </form>
+
+      <!-- ★ 新增：登入彈窗底部的管理者聯絡資訊 ★ -->
+      <div class="pt-3 border-t border-slate-700/80 text-[11px] text-slate-400 space-y-1">
+        <div class="text-amber-400 font-semibold"><i class="fa-solid fa-lock mr-1"></i> 僅限溙鼎內部人員登入</div>
+        <div>若帳號遺忘或有任何問題請聯繫管理員：</div>
+        <div class="font-mono text-emerald-400 select-all">Email: s0982990034@gmail.com</div>
+        <div class="font-mono text-cyan-400 select-all">電話: 06-2330668 分機 37</div>
+      </div>
     </div>
   </div>
 
@@ -628,9 +657,12 @@
   <div id="user-mgmt-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-users-gear text-purple-400"></i> 全公司人員帳號權限管理
-        </h3>
+        <div>
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-users-gear text-purple-400"></i> 全公司人員帳號權限管理
+          </h3>
+          <p class="text-xs text-slate-400">分配管理員 (Admin)、可編輯人員 (Editor)、可檢視人員 (Viewer)</p>
+        </div>
         <button onclick="closeUserManagerModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
       <form onsubmit="handleCreateUser(event)" class="bg-slate-900/90 border border-purple-500/30 p-3.5 rounded-xl space-y-3 text-xs">
@@ -742,146 +774,195 @@
   </div>
 
   <script>
-    // ================= 安全防崩潰：時間與即時時鐘引擎 =================
-    const WEEK_DAYS_ZH = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    // ================= 全套真實專案資料集 (完整保底還原庫) =================
+    const MASTER_INITIAL_PROJECTS = [
+      // === 水污專案 (15 筆) ===
+      {
+        id: 1, category: "水污專案", region: "高雄", name: "玉膳食品(內湖) - 廢水濾水系統淨化工程",
+        status: "進行中", progress: 50, owner: "雅淇 / 琮樺", deadline: "2026/08/31",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "◎第一次軟體部分修改已完成\n待辦：現場仍有壓力異常，廠商已預告二次修改與報價。",
+        risk: "設備氣密與二次修改疑慮", photos: []
+      },
+      {
+        id: 2, category: "水污專案", region: "苗栗", name: "銅鑼科學園區污水廠 - 真空泵系統",
+        status: "進行中", progress: 95, owner: "閔松", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "已請款，阿美姊處理。", risk: "請款作業進行中", photos: []
+      },
+      {
+        id: 3, category: "水污專案", region: "苗栗", name: "銅鑼科學園區污水廠 - 蒸發罐熱泵",
+        status: "進行中", progress: 95, owner: "閔松", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "已請款，阿美姊處理。", risk: "請款作業進行中", photos: []
+      },
+      {
+        id: 4, category: "水污專案", region: "苗栗", name: "銅鑼科學園區污水廠 - 結晶罐熱泵",
+        status: "進行中", progress: 75, owner: "閔松", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "10/12 馬達運送至現場，10/15 寬利馬達線上試車對心完成。", risk: "正常推展", photos: []
+      },
+      {
+        id: 5, category: "水污專案", region: "新竹", name: "復盛精密(寶山) - 氟鹽/高COD廢水處理系統",
+        status: "進行中", progress: 50, owner: "琮樺", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "◎PID已完成\n◎麗景施工報價已完成\n◎本週已確認會進場施工。", risk: "交期與配管緊湊", photos: []
+      },
+      {
+        id: 6, category: "水污專案", region: "高雄", name: "東聯化學(林園) - 高COD廢水處理",
+        status: "評估中", progress: 25, owner: "閔松", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "已回覆以我司原有舊設備搭建客製化小型系統，報價持續溝通中。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 7, category: "水污專案", region: "高雄", name: "高健雷射精機(橋頭) - 金屬清洗與生活廢水",
+        status: "評估中", progress: 15, owner: "閔松", deadline: "2027年暫延",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "目前廢水方案尚在評估範圍，暫延至明年推展。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 8, category: "水污專案", region: "桃園", name: "中勤實業(龜山) - 樹脂再生廢水中和系統",
+        status: "評估中", progress: 25, owner: "閔松", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "業主已提供廢水清除廠商資訊，正安排技術與時程對接。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 9, category: "水污專案", region: "台南", name: "南寶樹脂(西港) - 高COD廢水降解排污工程",
+        status: "評估中", progress: 15, owner: "琮樺", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "客戶內部專案調整中，靜候窗口重啟聯繫。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 10, category: "水污專案", region: "台南", name: "東陽實業(新市) - ED電泳塗裝廢水處理",
+        status: "評估中", progress: 25, owner: "閔松", deadline: "年底評估",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "實驗水樣報告數據仍有落差，預計年底前再次推進。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 11, category: "水污專案", region: "台南", name: "瓜瓜園故事館(新化) - 蒸地瓜高黏度廢水整改",
+        status: "評估中", progress: 25, owner: "琮樺", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "新化廠現場已現勘，主要項目包含脫水機汰換及曝氣頭風管更換報價中。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 12, category: "水污專案", region: "彰化", name: "味丹生技 - 超濾(UF)膜液體濃縮中試",
+        status: "評估中", progress: 25, owner: "閔松", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "實驗數據報告已出爐，正與廠方安排技術審查會議時間。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 13, category: "水污專案", region: "台南", name: "聯電(新市廠) - 廢水處理系統改造評估",
+        status: "評估中", progress: 25, owner: "閔松", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "上週試車因前端系統微幅堵塞，需微調進料配比後再行測試。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 14, category: "水污專案", region: "台南", name: "南科廢水廠 - Koch MBR實績及預算評估",
+        status: "評估中", progress: 25, owner: "閔松", deadline: "依進度推展",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "調整並確認整體工程標案預算總價，提供 Koch MBR 實績佐證。", risk: "等待客戶回覆確認", photos: []
+      },
+      {
+        id: 15, category: "廠內工程", region: "廠內", name: "溙鼎內部 - 廠內增建辦公室工程 (貨櫃屋)",
+        status: "進行中", progress: 50, owner: "行政組", deadline: "2026/11",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "CAD圖面與施工範圍已確認，BOM表材料清單確認中。", risk: "正常推展", photos: []
+      },
 
-    function padZero(num) {
-      return String(num).padStart(2, '0');
-    }
-
-    function getSystemDateTime() {
-      const now = new Date();
-      const rocYear = now.getFullYear() - 1911;
-      const y = now.getFullYear();
-      const m = now.getMonth() + 1;
-      const d = now.getDate();
-      const dayZh = WEEK_DAYS_ZH[now.getDay()];
-      const hh = padZero(now.getHours());
-      const mm = padZero(now.getMinutes());
-      const ss = padZero(now.getSeconds());
-
-      const fullString = `民國 ${rocYear} 年 ${m} 月 ${d} 日 (${y}) ${hh}:${mm}:${ss} ${dayZh}`;
-      const shortDate = `${y}-${padZero(m)}-${padZero(d)}`;
-      const zhDateOnly = `民國 ${rocYear} 年 ${m} 月 ${d} 日 ${dayZh}`;
-
-      return { now, rocYear, y, m, d, dayZh, hh, mm, ss, fullString, shortDate, zhDateOnly };
-    }
-
-    function calculateCurrentWeekRange(baseDate = new Date()) {
-      const d = new Date(baseDate);
-      const day = d.getDay();
-      const diffToMonday = day === 0 ? -6 : 1 - day;
-      
-      const monday = new Date(d);
-      monday.setDate(d.getDate() + diffToMonday);
-
-      const friday = new Date(monday);
-      friday.setDate(monday.getDate() + 4);
-
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
-
-      const monStr = `${monday.getFullYear()}/${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())}`;
-      const friStr = `${padZero(friday.getMonth()+1)}/${padZero(friday.getDate())}`;
-      const sunStr = `${sunday.getFullYear()}/${padZero(sunday.getMonth()+1)}/${padZero(sunday.getDate())}`;
-
-      const workWeekStr = `${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())} - ${friStr}`;
-      const fullWeekStr = `${monStr} ~ ${sunStr}`;
-
-      return { monday, friday, sunday, workWeekStr, fullWeekStr };
-    }
-
-    function startRealtimeClock() {
-      function update() {
-        try {
-          const dt = getSystemDateTime();
-          const liveElem = document.getElementById("live-time-display");
-          if (liveElem) liveElem.innerText = dt.fullString;
-        } catch (e) {
-          console.error("時鐘更新異常:", e);
-        }
+      // === 空污 VOC 專案 (7 筆) ===
+      {
+        id: 101, category: "空污專案", region: "台南", name: "東陽實業一部3200CMM沸石轉輪",
+        status: "進行中", progress: 90, owner: "翊安", deadline: "2026/08/08",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "◎本周重點：\n1.安排與業主開會討論細節\n2.內部自檢缺失改善\n3.安排驗收會議",
+        risk: "設備氣密與二次修改疑慮", photos: []
+      },
+      {
+        id: 102, category: "空污專案", region: "台南", name: "東陽實業六部2000CMM沸石轉輪",
+        status: "進行中", progress: 50, owner: "翊安", deadline: "2026/12/E",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "◎設備組立：\n永大開發安裝設備內風管。\n溙鼎依施工期程表按計畫執行。",
+        risk: "正常推展", photos: []
+      },
+      {
+        id: 103, category: "空污專案", region: "台南", name: "東陽實業二部2500CMM沸石轉輪",
+        status: "進行中", progress: 40, owner: "翊安", deadline: "2026/12/E",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "設備組立09/21-10/09，配管工程與電控工程依序銜接，鐵皮屋由柯老闆施作。",
+        risk: "正常推展", photos: []
+      },
+      {
+        id: 104, category: "空污專案", region: "高雄", name: "台塑林園PVC廠 - 新設VOC設備",
+        status: "進行中", progress: 75, owner: "泰源 / 景鍾", deadline: "2026/09/30",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "◎10/19化學鉚釘施做完成，現場二次側配管與電線拉設持續推展。",
+        risk: "交期與配管緊湊", photos: []
+      },
+      {
+        id: 105, category: "空污專案", region: "新竹", name: "瑞峰半導體 - 新增觸媒爐及擴增脫附風量",
+        status: "進行中", progress: 50, owner: "翊安 / 于豪", deadline: "5/25後120日",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "◎10/22吊掛前準備\n◎10/24瑞峰吊掛作業及沸石定位（受天候影響評估改期中）。",
+        risk: "現場施工天候/颱風延期", photos: []
+      },
+      {
+        id: 106, category: "空污專案", region: "高雄", name: "台塑IPA廠 - 觸媒塔歲修保養",
+        status: "保養類", progress: 100, owner: "閔松", deadline: "2026/10/28",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "◎10/20下午觸媒塔進永康廠\n◎10/28維修保養完成出廠，後續追蹤請款作業。",
+        risk: "請款作業進行中", photos: []
+      },
+      {
+        id: 107, category: "空污專案", region: "新竹", name: "台灣半導體 - 6吋VOC轉輪處理效率緊急修復",
+        status: "進行中", progress: 75, owner: "保龍", deadline: "2026/11",
+        report_week: "10/26 - 10/30", weeks: ["10/26 - 10/30"],
+        notes: "因酸氣抽入造成轉輪腐蝕，已用PID檢測效率並更換蜂巢新觸媒，持續監控放流數值。",
+        risk: "正常推展", photos: []
       }
-      update();
-      setInterval(update, 1000);
-    }
-
-    // 2025 ~ 2031 年週次清單
-    const WEEKS_BY_YEAR = {};
-    const ALL_WEEKS = [];
-
-    (function generateAllWeeks() {
-      for (let y = 2025; y <= 2031; y++) {
-        WEEKS_BY_YEAR[y] = [];
-      }
-      let cur = new Date(2025, 0, 6);
-      const end = new Date(2031, 11, 29);
-
-      function fmt(d) {
-        return `${d.getFullYear()}/${padZero(d.getMonth()+1)}/${padZero(d.getDate())}`;
-      }
-
-      while (cur <= end) {
-        let sun = new Date(cur);
-        sun.setDate(cur.getDate() + 6);
-        const y = cur.getFullYear();
-        const str = `${fmt(cur)} ~ ${fmt(sun)}`;
-        if (WEEKS_BY_YEAR[y]) {
-          WEEKS_BY_YEAR[y].push(str);
-        }
-        ALL_WEEKS.push(str);
-        cur.setDate(cur.getDate() + 7);
-      }
-    })();
-
-    // 企業級預設帳號目錄
-    const DEFAULT_SYSTEM_USERS = [
-      { username: "admin", password: "taiding888", name: "總經理 / 最高管理員", role: "ADMIN", status: "active" },
-      { username: "minsong", password: "ms1234", name: "閔松", role: "EDITOR", status: "active" },
-      { username: "tsunghua", password: "th1234", name: "琮樺", role: "EDITOR", status: "active" },
-      { username: "yian", password: "ya1234", name: "翊安", role: "EDITOR", status: "active" },
-      { username: "guest", password: "guest123", name: "跨部門/外賓檢視", role: "VIEWER", status: "active" }
     ];
 
-    const BIN_ID = "6ae716fdac6210605a6349af";
-    const API_KEY = "$2a$10$TrBm5eEyLzx6qjw7Ek1L0eOB2CvVH5Fc59ZemW8tRMlNbbmnUUbz/6";
-    const STORAGE_KEY_PROJ = "taiding_projects_data_v2";
-    const STORAGE_KEY_ACP = "taiding_acp_data_v2";
-    const STORAGE_KEY_USERS = "taiding_users_directory_v2";
-    const STORAGE_KEY_GAS = "taiding_gas_webhook_url";
-    const SESSION_AUTH_KEY = "taiding_current_session_user";
+    const DEFAULT_ACP_REPORTS = [
+      {
+        id: 1, doc_no: "ACT-20261021-001", date: "2026-10-21", salesman: "閔松", dept: "業務部",
+        act_type: "現場勘查", stage: "需求確認",
+        cust_name: "東聯化學股份有限公司", contact: "洪主任 (廠務)", phone: "07-641-xxxx", address: "高雄林園石化工業區",
+        content: "前往林園廠針對高COD廢液熱值回收及客製化小型測試機台進行實地會勘。確認公共流體管路高程及防爆電熱改機規格，業主希望我司先提供DEMO測試機驗證。",
+        next_date: "2026-10-28", next_action: "提供設備規劃報價單", photos: []
+      },
+      {
+        id: 2, doc_no: "ACT-20261020-002", date: "2026-10-20", salesman: "琮樺", dept: "業務部",
+        act_type: "外出拜訪", stage: "規劃提案",
+        cust_name: "瓜瓜園地瓜生態故事館", contact: "蔡廠長", phone: "06-590-xxxx", address: "台南市新化區中正路",
+        content: "拜訪瓜瓜園新化廠，現場空間有限無法增設大水池，向蔡廠長提出現有設施優化提案：脫水機汰換＋曝氣頭與風管重整，並說明後續保養排程。",
+        next_date: "2026-10-27", next_action: "提供設備規劃報價單", photos: []
+      },
+      {
+        id: 3, doc_no: "ACT-20261019-003", date: "2026-10-19", salesman: "翊安", dept: "專案部",
+        act_type: "專案會議", stage: "工程執行",
+        cust_name: "東陽實業股份有限公司", contact: "李協理 / 張課長", phone: "06-356-xxxx", address: "台南市安南區",
+        content: "於東陽召開一部3200CMM沸石轉輪工程驗收前置會議。針對氣密性、變頻器操作以及風機馬達IE等級逐項自檢說明，確認二次驗收會議時程。",
+        next_date: "2026-10-26", next_action: "安排二次現勘及採樣", photos: []
+      }
+    ];
 
-    let projects = [];
-    let acpReports = [];
-    let systemUsers = [];
-    let currentMainTab = "water";
-    let selectedWeeks = [];
-    let currentYearFilter = new Date().getFullYear();
-    let currentSessionUser = null;
-    let parsedImportData = [];
-    let currentProjectPhotos = [];
-    let currentAcpPhotos = [];
+    // 強制修復載入資料函式 (可手動按，也可在陣列為空時自動呼叫)
+    function forceRestoreOriginalData() {
+      projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
+      acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
+      selectedWeeks = [];
+      document.getElementById("selected-week-label").innerText = "全部週次 (不限)";
+      
+      localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
+      localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
+      
+      updateStats();
+      renderProjects();
+      renderAcpReports();
+      saveToCloud(true);
+      alert("✓ 已強制修復並載入 15 筆水污 + 7 筆空污真實專案！");
+    }
 
-    const DOMAIN_STYLE = {
-      "水污專案": { badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30", icon: "fa-water" },
-      "空污專案": { badge: "bg-purple-500/10 text-purple-400 border-purple-500/30", icon: "fa-wind" },
-      "廠內工程": { badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30", icon: "fa-building" }
-    };
-
-    const STATUS_STYLE = {
-      "進行中": { border: "border-emerald-500/40", bar: "bg-emerald-500" },
-      "評估中": { border: "border-amber-500/40", bar: "bg-amber-500" },
-      "保養類": { border: "border-blue-500/40", bar: "bg-blue-500" },
-      "暫停": { border: "border-rose-500/40", bar: "bg-rose-500" },
-      "已完工": { border: "border-slate-500/40", bar: "bg-slate-400" }
-    };
-
-    const ROLE_MAP = {
-      "ADMIN": { label: "系統管理員", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" },
-      "EDITOR": { label: "可編輯人員", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
-      "VIEWER": { label: "可檢視人員", color: "bg-slate-500/10 text-slate-400 border-slate-500/30" }
-    };
-
-    // 初始化函式
+    // 啟動初始化 (加入防空資料自動注入)
     async function init() {
       startRealtimeClock();
 
@@ -891,7 +972,7 @@
 
       buildYearSelectOptions();
 
-      // 載入使用者
+      // 載入使用者權限
       const localUsers = localStorage.getItem(STORAGE_KEY_USERS);
       if (localUsers) {
         try { systemUsers = JSON.parse(localUsers); } catch(e){}
@@ -901,7 +982,6 @@
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
       }
 
-      // 恢復登入
       const savedSession = sessionStorage.getItem(SESSION_AUTH_KEY);
       if (savedSession) {
         try {
@@ -913,24 +993,39 @@
 
       applyRbacUI();
 
-      // 載入本機快取
+      // 載入專案資料：若本機為空則直接給予全套真實資料
       const localProj = localStorage.getItem(STORAGE_KEY_PROJ);
       const localAcp = localStorage.getItem(STORAGE_KEY_ACP);
       if (localProj) {
-        try { projects = JSON.parse(localProj); } catch(e){}
+        try { 
+          const parsed = JSON.parse(localProj);
+          if (Array.isArray(parsed) && parsed.length > 0) projects = parsed;
+        } catch(e){}
       }
       if (localAcp) {
-        try { acpReports = JSON.parse(localAcp); } catch(e){}
+        try { 
+          const parsedAcp = JSON.parse(localAcp);
+          if (Array.isArray(parsedAcp) && parsedAcp.length > 0) acpReports = parsedAcp;
+        } catch(e){}
+      }
+
+      // ★ 核心防禦：如果專案為空，強制注入真實專案資料 ★
+      if (!projects || projects.length === 0) {
+        projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
+        localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
+      }
+      if (!acpReports || acpReports.length === 0) {
+        acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
+        localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
       }
 
       renderWeekCheckboxes(currentYearFilter);
       switchTab('water');
-      setupDragAndDrop();
       updateStats();
       renderProjects();
       renderAcpReports();
 
-      // 3 秒超時安全連線
+      // 嘗試雲端連線同步 (3秒超時保護)
       syncCloudWithTimeout();
     }
 
@@ -948,18 +1043,12 @@
 
         if (res.ok) {
           const data = await res.json();
-          if (data && data.record) {
-            if (data.record.projects && data.record.projects.length > 0) {
-              projects = data.record.projects;
-              localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
-            }
+          if (data && data.record && data.record.projects && data.record.projects.length > 0) {
+            projects = data.record.projects;
+            localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
             if (data.record.acpReports) {
               acpReports = data.record.acpReports;
               localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
-            }
-            if (data.record.systemUsers) {
-              systemUsers = data.record.systemUsers;
-              localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
             }
             updateStats();
             renderProjects();
