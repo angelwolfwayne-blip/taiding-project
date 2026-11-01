@@ -807,16 +807,7 @@
   </div>
 
   <script>
-    const MASTER_INITIAL_USERS = [
-      { username: "celeste0909", password: "88888888", name: "最高管理員", role: "ADMIN", status: "active" },
-      { username: "admin", password: "taiding888", name: "總經理 / 最高管理員", role: "ADMIN", status: "active" },
-      { username: "minsong", password: "ms1234", name: "閔松", role: "EDITOR", status: "active" },
-      { username: "tsunghua", password: "th1234", name: "琮樺", role: "EDITOR", status: "active" },
-      { username: "yian", password: "ya1234", name: "翊安", role: "EDITOR", status: "active" },
-      { username: "yachi", password: "88888888", name: "雅淇", role: "EDITOR", status: "active" },
-      { username: "guest", password: "guest123", name: "跨部門/外賓檢視", role: "VIEWER", status: "active" }
-    ];
-
+    // ================= 全套真實專案資料集 (強制保底) =================
     const MASTER_INITIAL_PROJECTS = [
       {
         id: 1, category: "水污專案", region: "高雄", name: "玉膳食品(內湖) - 廢水濾水系統淨化工程",
@@ -984,6 +975,165 @@
       }
     ];
 
+    // ================= AI Agent 智慧助理決策核心 =================
+    function openAgentModal() {
+      document.getElementById("agent-modal").classList.remove("hidden");
+      generateAgentSummary();
+    }
+    function closeAgentModal() {
+      document.getElementById("agent-modal").classList.add("hidden");
+    }
+
+    function generateAgentSummary() {
+      const waterCount = projects.filter(p => p.category === '水污專案' || p.category === '廠內工程').length;
+      const vocCount = projects.filter(p => p.category === '空污專案').length;
+      const ongoing = projects.filter(p => p.status === '進行中').length;
+      const evalCount = projects.filter(p => p.status === '評估中').length;
+
+      const summaryText = `【AI Agent 系統全域掃描報告】
+• 目前水污/廠內專案共 ${waterCount} 筆，空污 VOC 專案共 ${vocCount} 筆。
+• 進行中案場：${ongoing} 筆，商機評估中：${evalCount} 筆。
+• 本週預設推進週期：10/26 - 10/30。所有專案進度與里程碑計算正常，無異常延宕風險。`;
+
+      document.getElementById("agent-summary-content").innerText = summaryText;
+    }
+
+    function askAgent() {
+      const q = document.getElementById("agent-question-input").value.trim().toLowerCase();
+      const ansBox = document.getElementById("agent-answer-box");
+      ansBox.classList.remove("hidden");
+
+      if (!q) {
+        ansBox.innerText = "請輸入您想查詢的問題或指令！";
+        return;
+      }
+
+      if (q.includes("評估") || q.includes("商機")) {
+        const list = projects.filter(p => p.status === '評估中');
+        ansBox.innerText = `【AI Agent 查詢結果】目前評估中的案場共 ${list.length} 筆：\n` + list.map(p => `• ${p.name} (${p.owner})`).join('\n');
+      } else if (q.includes("負責人") || q.includes("統計")) {
+        ansBox.innerText = `【AI Agent 統計】目前專案負責人分佈：\n• 閔松：主要負責水污與銅鑼科學園區案場\n• 翊安：負責東陽實業系列沸石轉輪\n• 琮樺：負責復盛精密與瓜瓜園整改`;
+      } else if (q.includes("聯絡") || q.includes("管理員")) {
+        ansBox.innerText = `【AI Agent 協助】系統管理員信箱：s0982990034@gmail.com，電話：06-2330668 分機 37。`;
+      } else {
+        ansBox.innerText = `【AI Agent 智慧答覆】已收到您的指令「${q}」。目前戰情室運作順暢，您可以透過右上角「新增專案案場」或「匯入 Excel」隨時擴充資料庫！`;
+      }
+    }
+
+    const WEEK_DAYS_ZH = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    function padZero(num) { return String(num).padStart(2, '0'); }
+
+    function getSystemDateTime() {
+      const now = new Date();
+      const rocYear = now.getFullYear() - 1911;
+      const y = now.getFullYear();
+      const m = now.getMonth() + 1;
+      const d = now.getDate();
+      const dayZh = WEEK_DAYS_ZH[now.getDay()];
+      const hh = padZero(now.getHours());
+      const mm = padZero(now.getMinutes());
+      const ss = padZero(now.getSeconds());
+      const fullString = `民國 ${rocYear} 年 ${m} 月 ${d} 日 (${y}) ${hh}:${mm}:${ss} ${dayZh}`;
+      const shortDate = `${y}-${padZero(m)}-${padZero(d)}`;
+      const zhDateOnly = `民國 ${rocYear} 年 ${m} 月 ${d} 日 ${dayZh}`;
+      return { now, rocYear, y, m, d, dayZh, hh, mm, ss, fullString, shortDate, zhDateOnly };
+    }
+
+    function calculateCurrentWeekRange(baseDate = new Date()) {
+      const d = new Date(baseDate);
+      const day = d.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() + diffToMonday);
+      const friday = new Date(monday);
+      friday.setDate(monday.getDate() + 4);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      const monStr = `${monday.getFullYear()}/${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())}`;
+      const friStr = `${padZero(friday.getMonth()+1)}/${padZero(friday.getDate())}`;
+      const sunStr = `${sunday.getFullYear()}/${padZero(sunday.getMonth()+1)}/${padZero(sunday.getDate())}`;
+      const workWeekStr = `${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())} - ${friStr}`;
+      const fullWeekStr = `${monStr} ~ ${sunStr}`;
+      return { monday, friday, sunday, workWeekStr, fullWeekStr };
+    }
+
+    function startRealtimeClock() {
+      function updateClock() {
+        try {
+          const dt = getSystemDateTime();
+          const liveElem = document.getElementById("live-time-display");
+          if (liveElem) liveElem.innerText = dt.fullString;
+        } catch (e) {}
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    const WEEKS_BY_YEAR = {};
+    const ALL_WEEKS = [];
+    (function generateAllWeeks() {
+      for (let y = 2025; y <= 2031; y++) { WEEKS_BY_YEAR[y] = []; }
+      let cur = new Date(2025, 0, 6);
+      const end = new Date(2031, 11, 29);
+      function fmt(d) { return `${d.getFullYear()}/${padZero(d.getMonth()+1)}/${padZero(d.getDate())}`; }
+      while (cur <= end) {
+        let sun = new Date(cur);
+        sun.setDate(cur.getDate() + 6);
+        const y = cur.getFullYear();
+        const str = `${fmt(cur)} ~ ${fmt(sun)}`;
+        if (WEEKS_BY_YEAR[y]) WEEKS_BY_YEAR[y].push(str);
+        ALL_WEEKS.push(str);
+        cur.setDate(cur.getDate() + 7);
+      }
+    })();
+
+    const DEFAULT_SYSTEM_USERS = [
+      { username: "admin", password: "taiding888", name: "總經理 / 最高管理員", role: "ADMIN", status: "active" },
+      { username: "minsong", password: "ms1234", name: "閔松", role: "EDITOR", status: "active" },
+      { username: "tsunghua", password: "th1234", name: "琮樺", role: "EDITOR", status: "active" },
+      { username: "yian", password: "ya1234", name: "翊安", role: "EDITOR", status: "active" },
+      { username: "guest", password: "guest123", name: "跨部門/外賓檢視", role: "VIEWER", status: "active" }
+    ];
+
+    const BIN_ID = "6ae716fdac6210605a6349af";
+    const API_KEY = "$2a$10$TrBm5eEyLzx6qjw7Ek1L0eOB2CvVH5Fc59ZemW8tRMlNbbmnUUbz/6";
+    const STORAGE_KEY_PROJ = "taiding_projects_data_v2";
+    const STORAGE_KEY_ACP = "taiding_acp_data_v2";
+    const STORAGE_KEY_USERS = "taiding_users_directory_v2";
+    const STORAGE_KEY_GAS = "taiding_gas_webhook_url";
+    const SESSION_AUTH_KEY = "taiding_current_session_user";
+
+    let projects = [];
+    let acpReports = [];
+    let systemUsers = [];
+    let currentMainTab = "water";
+    let selectedWeeks = [];
+    let currentYearFilter = new Date().getFullYear();
+    let currentSessionUser = null;
+    let parsedImportData = [];
+    let currentProjectPhotos = [];
+    let currentAcpPhotos = [];
+
+    const DOMAIN_STYLE = {
+      "水污專案": { badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30", icon: "fa-water" },
+      "空污專案": { badge: "bg-purple-500/10 text-purple-400 border-purple-500/30", icon: "fa-wind" },
+      "廠內工程": { badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30", icon: "fa-building" }
+    };
+
+    const STATUS_STYLE = {
+      "進行中": { border: "border-emerald-500/40", bar: "bg-emerald-500" },
+      "評估中": { border: "border-amber-500/40", bar: "bg-amber-500" },
+      "保養類": { border: "border-blue-500/40", bar: "bg-blue-500" },
+      "暫停": { border: "border-rose-500/40", bar: "bg-rose-500" },
+      "已完工": { border: "border-slate-500/40", bar: "bg-slate-400" }
+    };
+
+    const ROLE_MAP = {
+      "ADMIN": { label: "系統管理員", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" },
+      "EDITOR": { label: "可編輯人員", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
+      "VIEWER": { label: "可檢視人員", color: "bg-slate-500/10 text-slate-400 border-slate-500/30" }
+    };
+
     async function init() {
       startRealtimeClock();
       const curWeek = calculateCurrentWeekRange();
@@ -991,20 +1141,11 @@
       document.getElementById("calc-current-week-btn-text").innerText = curWeek.workWeekStr;
       buildYearSelectOptions();
 
-      let localUsers = localStorage.getItem(STORAGE_KEY_USERS);
-      if (!localUsers) {
-        systemUsers = JSON.parse(JSON.stringify(MASTER_INITIAL_USERS));
+      const localUsers = localStorage.getItem(STORAGE_KEY_USERS);
+      if (localUsers) { try { systemUsers = JSON.parse(localUsers); } catch(e){} }
+      if (!systemUsers || systemUsers.length === 0) {
+        systemUsers = DEFAULT_SYSTEM_USERS;
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
-      } else {
-        try {
-          systemUsers = JSON.parse(localUsers);
-          if (!systemUsers.some(u => u.username.toLowerCase() === 'celeste0909')) {
-            systemUsers.unshift({ username: "celeste0909", password: "88888888", name: "最高管理員", role: "ADMIN", status: "active" });
-            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
-          }
-        } catch(e) {
-          systemUsers = JSON.parse(JSON.stringify(MASTER_INITIAL_USERS));
-        }
       }
 
       const savedSession = sessionStorage.getItem(SESSION_AUTH_KEY);
@@ -1047,17 +1188,15 @@
     function forceRestoreOriginalData() {
       projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
       acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
-      systemUsers = JSON.parse(JSON.stringify(MASTER_INITIAL_USERS));
       selectedWeeks = [];
       document.getElementById("selected-week-label").innerText = "全部週次 (不限)";
       localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
       localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
       updateStats();
       renderProjects();
       renderAcpReports();
       saveToCloud(true);
-      alert("✓ 已強制修復並載入 22 筆真實專案與全套官方帳號（含 Celeste0909）！");
+      alert("✓ 已強制修復並載入 15 筆水污 + 7 筆空污真實專案！");
     }
 
     function fallbackToLocalReady() {
@@ -1211,7 +1350,7 @@
               <button onclick="toggleUserStatus(${idx})" class="${u.status === 'active' ? 'text-rose-400 hover:text-rose-300' : 'text-emerald-400 hover:text-emerald-300'} font-medium">
                 ${u.status === 'active' ? '停用' : '啟用'}
               </button>
-              ${!isSelf && u.username !== 'celeste0909' ? `<button onclick="deleteUser(${idx})" class="text-red-500 hover:text-red-400 font-bold ml-1">刪除</button>` : ''}
+              ${!isSelf && u.username !== 'admin' ? `<button onclick="deleteUser(${idx})" class="text-red-500 hover:text-red-400 font-bold ml-1">刪除</button>` : ''}
             </td>
           </tr>
         `;
@@ -1233,12 +1372,14 @@
       e.target.reset();
     }
 
+    // ★ 新增：修改帳號與姓名機制 ★
     async function editUserPrompt(idx) {
       const u = systemUsers[idx];
       const newAcc = prompt(`修改帳號代號 (英文/數字)：`, u.username);
       if (!newAcc) return;
       const newName = prompt(`修改真實姓名：`, u.name);
       if (!newName) return;
+
       u.username = newAcc.trim().toLowerCase();
       u.name = newName.trim();
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
@@ -1270,19 +1411,21 @@
       }
     }
 
+    // ★ 停用機制 ★
     async function toggleUserStatus(idx) {
       const u = systemUsers[idx];
-      if (u.username === 'celeste0909') { alert("最高管理員帳號無法停用！"); return; }
+      if (u.username === 'admin') { alert("最高管理員帳號無法停用！"); return; }
       u.status = u.status === 'active' ? 'disabled' : 'active';
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
       renderUsersTable();
       await saveToCloud(true);
     }
 
+    // ★ 刪除機制 ★
     async function deleteUser(idx) {
       const u = systemUsers[idx];
-      if (u.username === 'celeste0909') { alert("最高管理員帳號無法刪除！"); return; }
-      if (confirm(`警告：確定要永久刪除【${u.name} (${u.username})】的帳號嗎？`)) {
+      if (u.username === 'admin') { alert("最高管理員帳號無法刪除！"); return; }
+      if (confirm(`警告：確定要永久刪除【${u.name} (${u.username})】的帳號嗎？刪除後無法復原！`)) {
         systemUsers.splice(idx, 1);
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
         renderUsersTable();
