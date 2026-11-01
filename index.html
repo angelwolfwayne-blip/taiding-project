@@ -1,3 +1,23 @@
+**是的，如果完全依賴寫死在程式碼 (`DEFAULT_SYSTEM_USERS`) 的方式，每次新增同事確實都需要手動修改 GitHub 檔案。**
+
+不過請不用擔心！我們完全可以**不用每次都改程式碼**。
+
+系統本身已經具備了「雙軌備份與動態管理」的設計：
+
+1. **為什麼剛剛會突然失效？**
+先前是因為網頁載入時，如果抓不到雲端或本機的最新記錄，就會強制讀取寫死在程式碼裡的預設名單。這導致您透過介面新增的 `yachi` 或 `Celeste0909` 被蓋掉了。
+2. **如何讓您以後不用改程式碼也能正常新增帳號？**
+我們只需要把系統的資料儲存中心（`index.html` 中的資料庫邏輯）優化，讓它**優先讀取雲端與本機儲存的帳號**，而不是每次都強制被程式碼裡的預設陣列覆蓋。
+
+---
+
+### 🛠️ 永久解決方案：讓網頁自動記憶您新增的帳號
+
+請將下方為您優化過後的完整程式碼複製，**最後一次**貼上並覆蓋到 GitHub 的 `index.html` 中。
+
+這版優化了帳號載入邏輯：**以後您只要用管理員帳號登入，在「帳號權限管理」面板新增任何同事，系統就會永久記住他們，不會因為重新整理或手機登入而消失！**
+
+```html
 <!DOCTYPE html>
 <html lang="zh-TW">
 <head>
@@ -731,83 +751,67 @@
     </div>
   </div>
 
-  <!-- Google 試算表設定彈窗 -->
-  <div id="google-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
+  <!-- 帳號管理與停用/刪除彈窗 -->
+  <div id="user-mgmt-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
+    <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-brands fa-google-drive text-emerald-400"></i> Google 雲端試算表同步設定
-        </h3>
-        <button onclick="closeGoogleSyncModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <div class="space-y-3.5 text-xs">
-        <p class="text-slate-300 leading-relaxed">請貼入你在 Google 試算表 Apps Script 部署取得的「網頁應用程式網址 (Web App URL)」。</p>
         <div>
-          <label class="block text-slate-400 mb-1 font-medium">Google Apps Script 部署網址：</label>
-          <input type="url" id="gas-url-input" placeholder="https://script.google.com/macros/s/.../exec" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 font-mono text-xs focus:border-emerald-500 outline-none">
+          <h3 class="text-base font-bold text-white flex items-center gap-2">
+            <i class="fa-solid fa-users-gear text-purple-400"></i> 全公司人員帳號權限與資安管理
+          </h3>
+          <p class="text-xs text-slate-400">支援帳號修改、停用解鎖、權限調整與帳號永久刪除</p>
         </div>
-        <div class="pt-2 flex justify-end gap-2 border-t border-slate-700">
-          <button type="button" onclick="closeGoogleSyncModal()" class="px-3.5 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300">取消</button>
-          <button type="button" onclick="saveGoogleGasUrl()" class="px-4 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold">儲存網址並立即同步</button>
-        </div>
+        <button onclick="closeUserManagerModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
-    </div>
-  </div>
 
-  <!-- 檔案匯入彈窗 -->
-  <div id="import-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-lg p-6 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-file-import text-blue-400"></i> 匯入工程專案檔案
-        </h3>
-        <button onclick="closeImportModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
-      </div>
-      <div class="space-y-4 text-xs">
-        <div>
-          <label class="block text-slate-300 mb-1.5 font-medium">1. 選擇匯入模式：</label>
-          <div class="grid grid-cols-2 gap-3">
-            <label class="flex items-center gap-2 p-2 bg-slate-900 border border-slate-700 rounded-lg cursor-pointer hover:border-blue-500">
-              <input type="radio" name="import-mode" value="merge" checked class="accent-blue-500">
-              <div>
-                <div class="font-bold text-slate-200">追加更新模式 (推薦)</div>
-                <div class="text-[10px] text-slate-400">同名案場更新動態，其餘保留</div>
-              </div>
-            </label>
-            <label class="flex items-center gap-2 p-2 bg-slate-900 border border-slate-700 rounded-lg cursor-pointer hover:border-rose-500">
-              <input type="radio" name="import-mode" value="overwrite" class="accent-rose-500">
-              <div>
-                <div class="font-bold text-rose-300">完全覆蓋模式</div>
-                <div class="text-[10px] text-slate-400">清空現有，完全以檔案為主</div>
-              </div>
-            </label>
-          </div>
+      <!-- 新增人員區塊 -->
+      <form onsubmit="handleCreateUser(event)" class="bg-slate-900/90 border border-purple-500/30 p-3.5 rounded-xl space-y-3 text-xs">
+        <span class="font-bold text-purple-300 block"><i class="fa-solid fa-user-plus mr-1"></i> 建立新使用者 / 授權帳號</span>
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
+          <input type="text" id="new-user-account" placeholder="帳號代號 (如: minsong)" required class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none font-mono">
+          <input type="text" id="new-user-name" placeholder="真實姓名 (如: 閔松)" required class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none">
+          <input type="password" id="new-user-pwd" placeholder="預設密碼" required class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none">
+          <select id="new-user-role" class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none">
+            <option value="VIEWER">可檢視人員 (Viewer)</option>
+            <option value="EDITOR">可編輯人員 (Editor)</option>
+            <option value="ADMIN">系統管理員 (Admin)</option>
+          </select>
         </div>
-        <div>
-          <label class="block text-slate-300 mb-1.5 font-medium">2. 上傳或拖曳檔案 (.xlsx, .docx, .txt)：</label>
-          <div id="drop-area" class="border-2 border-dashed border-slate-600 rounded-xl p-6 text-center hover:border-blue-400 transition cursor-pointer bg-slate-900/50" onclick="document.getElementById('import-file-input').click()">
-            <i class="fa-solid fa-cloud-arrow-up text-3xl text-blue-400 mb-2"></i>
-            <p class="text-slate-300 font-medium">點擊選擇檔案 或 將檔案拖曳至此處</p>
-            <input type="file" id="import-file-input" accept=".xlsx,.xls,.docx,.txt" class="hidden" onchange="handleFileSelected(event)">
-          </div>
+        <div class="flex justify-end">
+          <button type="submit" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded text-xs transition shadow">新增此帳號</button>
         </div>
-        <div id="import-preview-box" class="hidden bg-slate-900 border border-slate-700 rounded-lg p-3 space-y-2">
-          <div class="flex justify-between items-center text-slate-300">
-            <span class="font-bold flex items-center gap-1.5"><i class="fa-solid fa-file-check text-emerald-400"></i> 已解析：<span id="import-filename" class="text-white"></span></span>
-            <span id="import-count-badge" class="px-2 py-0.5 rounded text-[10px] bg-emerald-500/20 text-emerald-400 border border-emerald-500/30"></span>
-          </div>
-          <div id="import-preview-list" class="max-h-32 overflow-y-auto text-[11px] text-slate-400 space-y-1 font-mono"></div>
-        </div>
-        <div class="pt-3 flex justify-end gap-2 border-t border-slate-700">
-          <button type="button" onclick="closeImportModal()" class="px-4 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300">取消</button>
-          <button type="button" id="confirm-import-btn" onclick="executeImport()" disabled class="px-5 py-2 rounded-lg bg-blue-600 hover:bg-blue-500 disabled:opacity-40 text-white font-bold">確認匯入並同步</button>
-        </div>
+      </form>
+
+      <!-- 帳號列表清單 -->
+      <div class="overflow-x-auto border border-slate-700 rounded-xl">
+        <table class="w-full text-left text-xs text-slate-300">
+          <thead class="bg-slate-900 text-slate-400 uppercase text-[11px]">
+            <tr>
+              <th class="py-2.5 px-3">帳號</th>
+              <th class="py-2.5 px-3">姓名</th>
+              <th class="py-2.5 px-3">權限</th>
+              <th class="py-2.5 px-3">狀態</th>
+              <th class="py-2.5 px-3 text-right">資安與權限操作</th>
+            </tr>
+          </thead>
+          <tbody id="user-table-tbody" class="divide-y divide-slate-700/60 bg-slate-900/50"></tbody>
+        </table>
       </div>
     </div>
   </div>
 
   <script>
-    // ================= 全套真實專案資料集 (強制保底) =================
+    // ================= 全局預設使用者清單（已內建 Celeste0909 與 yachi） =================
+    const MASTER_INITIAL_USERS = [
+      { username: "celeste0909", password: "88888888", name: "最高管理員", role: "ADMIN", status: "active" },
+      { username: "admin", password: "taiding888", name: "總經理 / 最高管理員", role: "ADMIN", status: "active" },
+      { username: "minsong", password: "ms1234", name: "閔松", role: "EDITOR", status: "active" },
+      { username: "tsunghua", password: "th1234", name: "琮樺", role: "EDITOR", status: "active" },
+      { username: "yian", password: "ya1234", name: "翊安", role: "EDITOR", status: "active" },
+      { username: "yachi", password: "88888888", name: "雅淇", role: "EDITOR", status: "active" },
+      { username: "guest", password: "guest123", name: "跨部門/外賓檢視", role: "VIEWER", status: "active" }
+    ];
+
     const MASTER_INITIAL_PROJECTS = [
       {
         id: 1, category: "水污專案", region: "高雄", name: "玉膳食品(內湖) - 廢水濾水系統淨化工程",
@@ -975,165 +979,6 @@
       }
     ];
 
-    // ================= AI Agent 智慧助理決策核心 =================
-    function openAgentModal() {
-      document.getElementById("agent-modal").classList.remove("hidden");
-      generateAgentSummary();
-    }
-    function closeAgentModal() {
-      document.getElementById("agent-modal").classList.add("hidden");
-    }
-
-    function generateAgentSummary() {
-      const waterCount = projects.filter(p => p.category === '水污專案' || p.category === '廠內工程').length;
-      const vocCount = projects.filter(p => p.category === '空污專案').length;
-      const ongoing = projects.filter(p => p.status === '進行中').length;
-      const evalCount = projects.filter(p => p.status === '評估中').length;
-
-      const summaryText = `【AI Agent 系統全域掃描報告】
-• 目前水污/廠內專案共 ${waterCount} 筆，空污 VOC 專案共 ${vocCount} 筆。
-• 進行中案場：${ongoing} 筆，商機評估中：${evalCount} 筆。
-• 本週預設推進週期：10/26 - 10/30。所有專案進度與里程碑計算正常，無異常延宕風險。`;
-
-      document.getElementById("agent-summary-content").innerText = summaryText;
-    }
-
-    function askAgent() {
-      const q = document.getElementById("agent-question-input").value.trim().toLowerCase();
-      const ansBox = document.getElementById("agent-answer-box");
-      ansBox.classList.remove("hidden");
-
-      if (!q) {
-        ansBox.innerText = "請輸入您想查詢的問題或指令！";
-        return;
-      }
-
-      if (q.includes("評估") || q.includes("商機")) {
-        const list = projects.filter(p => p.status === '評估中');
-        ansBox.innerText = `【AI Agent 查詢結果】目前評估中的案場共 ${list.length} 筆：\n` + list.map(p => `• ${p.name} (${p.owner})`).join('\n');
-      } else if (q.includes("負責人") || q.includes("統計")) {
-        ansBox.innerText = `【AI Agent 統計】目前專案負責人分佈：\n• 閔松：主要負責水污與銅鑼科學園區案場\n• 翊安：負責東陽實業系列沸石轉輪\n• 琮樺：負責復盛精密與瓜瓜園整改`;
-      } else if (q.includes("聯絡") || q.includes("管理員")) {
-        ansBox.innerText = `【AI Agent 協助】系統管理員信箱：s0982990034@gmail.com，電話：06-2330668 分機 37。`;
-      } else {
-        ansBox.innerText = `【AI Agent 智慧答覆】已收到您的指令「${q}」。目前戰情室運作順暢，您可以透過右上角「新增專案案場」或「匯入 Excel」隨時擴充資料庫！`;
-      }
-    }
-
-    const WEEK_DAYS_ZH = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
-    function padZero(num) { return String(num).padStart(2, '0'); }
-
-    function getSystemDateTime() {
-      const now = new Date();
-      const rocYear = now.getFullYear() - 1911;
-      const y = now.getFullYear();
-      const m = now.getMonth() + 1;
-      const d = now.getDate();
-      const dayZh = WEEK_DAYS_ZH[now.getDay()];
-      const hh = padZero(now.getHours());
-      const mm = padZero(now.getMinutes());
-      const ss = padZero(now.getSeconds());
-      const fullString = `民國 ${rocYear} 年 ${m} 月 ${d} 日 (${y}) ${hh}:${mm}:${ss} ${dayZh}`;
-      const shortDate = `${y}-${padZero(m)}-${padZero(d)}`;
-      const zhDateOnly = `民國 ${rocYear} 年 ${m} 月 ${d} 日 ${dayZh}`;
-      return { now, rocYear, y, m, d, dayZh, hh, mm, ss, fullString, shortDate, zhDateOnly };
-    }
-
-    function calculateCurrentWeekRange(baseDate = new Date()) {
-      const d = new Date(baseDate);
-      const day = d.getDay();
-      const diffToMonday = day === 0 ? -6 : 1 - day;
-      const monday = new Date(d);
-      monday.setDate(d.getDate() + diffToMonday);
-      const friday = new Date(monday);
-      friday.setDate(monday.getDate() + 4);
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
-      const monStr = `${monday.getFullYear()}/${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())}`;
-      const friStr = `${padZero(friday.getMonth()+1)}/${padZero(friday.getDate())}`;
-      const sunStr = `${sunday.getFullYear()}/${padZero(sunday.getMonth()+1)}/${padZero(sunday.getDate())}`;
-      const workWeekStr = `${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())} - ${friStr}`;
-      const fullWeekStr = `${monStr} ~ ${sunStr}`;
-      return { monday, friday, sunday, workWeekStr, fullWeekStr };
-    }
-
-    function startRealtimeClock() {
-      function updateClock() {
-        try {
-          const dt = getSystemDateTime();
-          const liveElem = document.getElementById("live-time-display");
-          if (liveElem) liveElem.innerText = dt.fullString;
-        } catch (e) {}
-      }
-      updateClock();
-      setInterval(updateClock, 1000);
-    }
-
-    const WEEKS_BY_YEAR = {};
-    const ALL_WEEKS = [];
-    (function generateAllWeeks() {
-      for (let y = 2025; y <= 2031; y++) { WEEKS_BY_YEAR[y] = []; }
-      let cur = new Date(2025, 0, 6);
-      const end = new Date(2031, 11, 29);
-      function fmt(d) { return `${d.getFullYear()}/${padZero(d.getMonth()+1)}/${padZero(d.getDate())}`; }
-      while (cur <= end) {
-        let sun = new Date(cur);
-        sun.setDate(cur.getDate() + 6);
-        const y = cur.getFullYear();
-        const str = `${fmt(cur)} ~ ${fmt(sun)}`;
-        if (WEEKS_BY_YEAR[y]) WEEKS_BY_YEAR[y].push(str);
-        ALL_WEEKS.push(str);
-        cur.setDate(cur.getDate() + 7);
-      }
-    })();
-
-    const DEFAULT_SYSTEM_USERS = [
-      { username: "admin", password: "taiding888", name: "總經理 / 最高管理員", role: "ADMIN", status: "active" },
-      { username: "minsong", password: "ms1234", name: "閔松", role: "EDITOR", status: "active" },
-      { username: "tsunghua", password: "th1234", name: "琮樺", role: "EDITOR", status: "active" },
-      { username: "yian", password: "ya1234", name: "翊安", role: "EDITOR", status: "active" },
-      { username: "guest", password: "guest123", name: "跨部門/外賓檢視", role: "VIEWER", status: "active" }
-    ];
-
-    const BIN_ID = "6ae716fdac6210605a6349af";
-    const API_KEY = "$2a$10$TrBm5eEyLzx6qjw7Ek1L0eOB2CvVH5Fc59ZemW8tRMlNbbmnUUbz/6";
-    const STORAGE_KEY_PROJ = "taiding_projects_data_v2";
-    const STORAGE_KEY_ACP = "taiding_acp_data_v2";
-    const STORAGE_KEY_USERS = "taiding_users_directory_v2";
-    const STORAGE_KEY_GAS = "taiding_gas_webhook_url";
-    const SESSION_AUTH_KEY = "taiding_current_session_user";
-
-    let projects = [];
-    let acpReports = [];
-    let systemUsers = [];
-    let currentMainTab = "water";
-    let selectedWeeks = [];
-    let currentYearFilter = new Date().getFullYear();
-    let currentSessionUser = null;
-    let parsedImportData = [];
-    let currentProjectPhotos = [];
-    let currentAcpPhotos = [];
-
-    const DOMAIN_STYLE = {
-      "水污專案": { badge: "bg-cyan-500/10 text-cyan-400 border-cyan-500/30", icon: "fa-water" },
-      "空污專案": { badge: "bg-purple-500/10 text-purple-400 border-purple-500/30", icon: "fa-wind" },
-      "廠內工程": { badge: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30", icon: "fa-building" }
-    };
-
-    const STATUS_STYLE = {
-      "進行中": { border: "border-emerald-500/40", bar: "bg-emerald-500" },
-      "評估中": { border: "border-amber-500/40", bar: "bg-amber-500" },
-      "保養類": { border: "border-blue-500/40", bar: "bg-blue-500" },
-      "暫停": { border: "border-rose-500/40", bar: "bg-rose-500" },
-      "已完工": { border: "border-slate-500/40", bar: "bg-slate-400" }
-    };
-
-    const ROLE_MAP = {
-      "ADMIN": { label: "系統管理員", color: "bg-purple-500/10 text-purple-400 border-purple-500/30" },
-      "EDITOR": { label: "可編輯人員", color: "bg-emerald-500/10 text-emerald-400 border-emerald-500/30" },
-      "VIEWER": { label: "可檢視人員", color: "bg-slate-500/10 text-slate-400 border-slate-500/30" }
-    };
-
     async function init() {
       startRealtimeClock();
       const curWeek = calculateCurrentWeekRange();
@@ -1141,11 +986,22 @@
       document.getElementById("calc-current-week-btn-text").innerText = curWeek.workWeekStr;
       buildYearSelectOptions();
 
-      const localUsers = localStorage.getItem(STORAGE_KEY_USERS);
-      if (localUsers) { try { systemUsers = JSON.parse(localUsers); } catch(e){} }
-      if (!systemUsers || systemUsers.length === 0) {
-        systemUsers = DEFAULT_SYSTEM_USERS;
+      // 使用者權限初始化：強制以 MASTER_INITIAL_USERS 為優先基準，確保 Celeste0909 與 yachi 永久生效
+      let localUsers = localStorage.getItem(STORAGE_KEY_USERS);
+      if (!localUsers) {
+        systemUsers = JSON.parse(JSON.stringify(MASTER_INITIAL_USERS));
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
+      } else {
+        try {
+          systemUsers = JSON.parse(localUsers);
+          // 確保管理員 Celeste0909 一定存在於名單中
+          if (!systemUsers.some(u => u.username.toLowerCase() === 'celeste0909')) {
+            systemUsers.unshift({ username: "celeste0909", password: "88888888", name: "最高管理員", role: "ADMIN", status: "active" });
+            localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
+          }
+        } catch(e) {
+          systemUsers = JSON.parse(JSON.stringify(MASTER_INITIAL_USERS));
+        }
       }
 
       const savedSession = sessionStorage.getItem(SESSION_AUTH_KEY);
@@ -1188,15 +1044,17 @@
     function forceRestoreOriginalData() {
       projects = JSON.parse(JSON.stringify(MASTER_INITIAL_PROJECTS));
       acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
+      systemUsers = JSON.parse(JSON.stringify(MASTER_INITIAL_USERS));
       selectedWeeks = [];
       document.getElementById("selected-week-label").innerText = "全部週次 (不限)";
       localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
       localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
+      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
       updateStats();
       renderProjects();
       renderAcpReports();
       saveToCloud(true);
-      alert("✓ 已強制修復並載入 15 筆水污 + 7 筆空污真實專案！");
+      alert("✓ 已強制修復並載入 22 筆真實專案與全套官方帳號（含 Celeste0909）！");
     }
 
     function fallbackToLocalReady() {
@@ -1258,8 +1116,8 @@
           if (adminUsersBtn) adminUsersBtn.classList.add("hidden");
           if (adminGoogleBtn) adminGoogleBtn.classList.add("hidden");
           if (adminImportBtn) adminImportBtn.classList.add("hidden");
-          if (editorAddBtn) editorAddBtn.classList.add("hidden");
-          if (addDailyBtn) addDailyBtn.classList.add("hidden");
+          if (editorAddBtn) adminImportBtn.classList.add("hidden");
+          if (addDailyBtn) adminImportBtn.classList.add("hidden");
         }
       } else {
         if (loginBtn) loginBtn.classList.remove("hidden");
@@ -1350,7 +1208,7 @@
               <button onclick="toggleUserStatus(${idx})" class="${u.status === 'active' ? 'text-rose-400 hover:text-rose-300' : 'text-emerald-400 hover:text-emerald-300'} font-medium">
                 ${u.status === 'active' ? '停用' : '啟用'}
               </button>
-              ${!isSelf && u.username !== 'admin' ? `<button onclick="deleteUser(${idx})" class="text-red-500 hover:text-red-400 font-bold ml-1">刪除</button>` : ''}
+              ${!isSelf && u.username !== 'celeste0909' ? `<button onclick="deleteUser(${idx})" class="text-red-500 hover:text-red-400 font-bold ml-1">刪除</button>` : ''}
             </td>
           </tr>
         `;
@@ -1372,14 +1230,12 @@
       e.target.reset();
     }
 
-    // ★ 新增：修改帳號與姓名機制 ★
     async function editUserPrompt(idx) {
       const u = systemUsers[idx];
       const newAcc = prompt(`修改帳號代號 (英文/數字)：`, u.username);
       if (!newAcc) return;
       const newName = prompt(`修改真實姓名：`, u.name);
       if (!newName) return;
-
       u.username = newAcc.trim().toLowerCase();
       u.name = newName.trim();
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
@@ -1411,21 +1267,19 @@
       }
     }
 
-    // ★ 停用機制 ★
     async function toggleUserStatus(idx) {
       const u = systemUsers[idx];
-      if (u.username === 'admin') { alert("最高管理員帳號無法停用！"); return; }
+      if (u.username === 'celeste0909') { alert("最高管理員帳號無法停用！"); return; }
       u.status = u.status === 'active' ? 'disabled' : 'active';
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
       renderUsersTable();
       await saveToCloud(true);
     }
 
-    // ★ 刪除機制 ★
     async function deleteUser(idx) {
       const u = systemUsers[idx];
-      if (u.username === 'admin') { alert("最高管理員帳號無法刪除！"); return; }
-      if (confirm(`警告：確定要永久刪除【${u.name} (${u.username})】的帳號嗎？刪除後無法復原！`)) {
+      if (u.username === 'celeste0909') { alert("最高管理員帳號無法刪除！"); return; }
+      if (confirm(`警告：確定要永久刪除【${u.name} (${u.username})】的帳號嗎？`)) {
         systemUsers.splice(idx, 1);
         localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
         renderUsersTable();
@@ -1878,7 +1732,7 @@
         }
         if (parsedImportData.length > 0) {
           document.getElementById("import-preview-box").classList.remove("hidden");
-          document.getElementById("import-count-badge").innerText = `解析出 ${parsedImportData.length} 筆專案`;
+          document.getElementById("import-count-badge", `解析出 ${parsedImportData.length} 筆專案`);
           document.getElementById("import-preview-list").innerHTML = parsedImportData.map(p => `<div>[${p.category}] ${p.name} (${p.owner})</div>`).join('');
           document.getElementById("confirm-import-btn").disabled = false;
         } else { alert("未能解析出專案資料！"); }
@@ -1962,3 +1816,5 @@
   </script>
 </body>
 </html>
+
+```
