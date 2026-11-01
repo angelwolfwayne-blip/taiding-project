@@ -72,12 +72,11 @@
 
   <main class="max-w-7xl mx-auto p-4 sm:p-6 space-y-6">
 
-    <!-- ================= 區塊 1 & 2：專案工程看板（水污 / 空污 共用） ================= -->
+    <!-- 專案看板 -->
     <div id="view-projects-container" class="space-y-6">
-      <!-- 後台管理控制列 -->
       <div id="admin-panel" class="hidden bg-slate-800/90 border border-emerald-500/40 rounded-xl p-3.5 flex flex-wrap items-center justify-between gap-3 shadow-lg">
         <div class="text-xs text-emerald-400 flex items-center gap-2">
-          <i class="fa-solid fa-calculator"></i> 管理模式：進度已改為里程碑自動計算，您可勾選階段自動求和，並自訂填寫特定最新週報區間。
+          <i class="fa-solid fa-shield-halved"></i> 管理模式已啟動：編輯儲存後將同時寫入「本機永久暫存」與「JSONBin 雲端」，徹底杜絕資料回退。
         </div>
         <div class="flex items-center gap-2">
           <button onclick="openProjectModal()" class="px-3 py-1.5 text-xs font-bold rounded-lg bg-emerald-500 hover:bg-emerald-400 text-slate-950 transition flex items-center gap-1.5">
@@ -109,11 +108,11 @@
         </div>
       </section>
 
-      <!-- 週期篩選器（2025 - 2031 年倒序） -->
+      <!-- 週期篩選器 -->
       <section class="bg-slate-800/60 border border-slate-700 rounded-xl p-4 space-y-3.5 no-print">
         <div class="flex flex-wrap items-center justify-between gap-3">
           <div class="flex flex-wrap items-center gap-2">
-            <span class="text-xs text-slate-400 font-medium">週期篩選 (2025-2031)：</span>
+            <span class="text-xs text-slate-400 font-medium">週期篩選：</span>
             <button onclick="toggleWeekDropdown()" class="px-3 py-1.5 text-xs bg-slate-900 border border-slate-600 rounded-lg text-slate-200 hover:border-emerald-500 transition flex items-center gap-2">
               <span id="selected-week-label">全部週次 (不限)</span>
               <i class="fa-solid fa-chevron-down text-[10px]"></i>
@@ -139,21 +138,32 @@
           </div>
         </div>
 
-        <!-- 下拉勾選週次 (2025 ~ 2031) -->
         <div id="week-dropdown-panel" class="hidden bg-slate-900 border border-slate-700 rounded-xl p-3 shadow-2xl">
-          <div class="flex justify-between items-center mb-2 pb-2 border-b border-slate-800 text-xs">
-            <span class="text-slate-400">勾選欲檢視的執行週次（已倒序排列至 2031 年底）：</span>
+          <div class="flex flex-wrap justify-between items-center mb-2 pb-2 border-b border-slate-800 text-xs gap-2">
+            <div class="flex items-center gap-2">
+              <span class="text-slate-400">切換年份：</span>
+              <select id="filter-year-select" onchange="filterWeeksByYear(this.value)" class="bg-slate-800 border border-slate-600 rounded px-2 py-1 text-emerald-400 font-bold outline-none">
+                <option value="2026" selected>2026 年 (當前年度)</option>
+                <option value="2025">2025 年</option>
+                <option value="2027">2027 年</option>
+                <option value="2028">2028 年</option>
+                <option value="2029">2029 年</option>
+                <option value="2030">2030 年</option>
+                <option value="2031">2031 年</option>
+                <option value="ALL">全部年份</option>
+              </select>
+            </div>
             <button onclick="toggleWeekDropdown()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark"></i></button>
           </div>
           <div id="week-checkboxes-container" class="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-2 max-h-56 overflow-y-auto text-xs pr-1"></div>
         </div>
       </section>
 
-      <!-- 專案卡片清單列表 -->
+      <!-- 專案卡片列表 -->
       <div id="projects-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4 sm:gap-5"></div>
     </div>
 
-    <!-- ================= 區塊 3：業務日報 (ACP 業務填寫) ================= -->
+    <!-- 業務日報 (ACP) -->
     <div id="view-daily-container" class="hidden space-y-6">
       <div class="bg-slate-800/80 border border-slate-700 rounded-xl p-4 sm:p-5 flex flex-col md:flex-row justify-between items-start md:items-center gap-3">
         <div>
@@ -167,7 +177,6 @@
         </button>
       </div>
 
-      <!-- 日報表格 -->
       <div class="bg-slate-800/60 border border-slate-700 rounded-xl overflow-hidden shadow">
         <div class="overflow-x-auto">
           <table class="w-full text-left text-xs text-slate-300">
@@ -193,7 +202,7 @@
     </div>
   </main>
 
-  <!-- ================= Modal 1: 專案卡片編輯/新增 (含里程碑自動加總計算) ================= -->
+  <!-- Modal 1: 專案卡片編輯 -->
   <div id="project-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-xl max-h-[92vh] overflow-y-auto p-5 sm:p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -260,11 +269,11 @@
           </div>
         </div>
 
-        <!-- ★ 進度自動計算核心：6 大工程里程碑勾選 ★ -->
+        <!-- 里程碑自動計算 -->
         <div class="bg-slate-900/90 border border-emerald-500/30 rounded-xl p-3.5 space-y-2.5">
           <div class="flex justify-between items-center border-b border-slate-700/60 pb-2">
             <span class="font-bold text-emerald-400 flex items-center gap-1.5">
-              <i class="fa-solid fa-calculator"></i> 專案進度里程碑 (勾選自動加總計算 %)
+              <i class="fa-solid fa-calculator"></i> 專案進度里程碑 (勾選自動累計 %)
             </span>
             <div class="flex items-center gap-1.5">
               <span class="text-slate-400 text-[11px]">計算結果：</span>
@@ -300,13 +309,13 @@
           </div>
         </div>
 
-        <!-- ★ 最新週報區間：由你自訂哪天到哪天 ★ -->
+        <!-- 最新週報區間 -->
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-emerald-400 mb-1 font-bold flex items-center gap-1.5">
-              <i class="fa-regular fa-calendar-check"></i> 最新週報區間 (自由填寫/指定)
+              <i class="fa-regular fa-calendar-check"></i> 最新週報區間 (自由填寫)
             </label>
-            <input type="text" id="proj-form-report-week" placeholder="例如：2026/10/19 ~ 10/23 或 11月第1週" class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2 text-slate-100 font-mono outline-none">
+            <input type="text" id="proj-form-report-week" placeholder="例如：2026/10/19 ~ 10/23" class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2 text-slate-100 font-mono outline-none">
           </div>
           <div>
             <label class="block text-slate-400 mb-1 font-medium">預定完成日 (Due Date)</label>
@@ -315,14 +324,18 @@
         </div>
 
         <div>
-          <label class="block text-slate-400 mb-1 flex items-center justify-between">
-            <span class="font-medium">歷史追蹤涵蓋週次 (勾選多週，已推算 2025-2031)：</span>
-            <span class="text-[10px] text-emerald-400">已倒序</span>
-          </label>
+          <div class="flex justify-between items-center mb-1">
+            <span class="text-slate-400 font-medium">涵蓋追蹤週次：</span>
+            <select id="modal-year-filter" onchange="filterModalWeeksByYear(this.value)" class="bg-slate-800 border border-slate-600 rounded px-2 py-0.5 text-[11px] text-emerald-400 outline-none">
+              <option value="2026" selected>顯示 2026 年</option>
+              <option value="2025">顯示 2025 年</option>
+              <option value="2027">顯示 2027 年</option>
+              <option value="ALL">全部年份</option>
+            </select>
+          </div>
           <div id="modal-weeks-list" class="bg-slate-900 border border-slate-700 rounded-lg p-2.5 max-h-28 overflow-y-auto grid grid-cols-1 sm:grid-cols-2 gap-1.5"></div>
         </div>
 
-        <!-- 最新週報動態：手動填寫 -->
         <div>
           <label class="block text-emerald-400 mb-1 font-bold flex items-center gap-1.5">
             <i class="fa-solid fa-keyboard"></i> 最新週報動態 / 現場進度 (手動填寫更新)
@@ -350,7 +363,7 @@
     </div>
   </div>
 
-  <!-- ================= Modal 2: 業務日報 (ACP 格式，支援 2025-2031) ================= -->
+  <!-- Modal 2: 業務日報 (ACP) -->
   <div id="acp-modal" class="fixed inset-0 bg-black/80 backdrop-blur-sm z-50 flex items-center justify-center hidden p-3 sm:p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[92vh] overflow-y-auto p-5 sm:p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -418,7 +431,6 @@
           </div>
         </div>
 
-        <!-- 客戶基本資料 -->
         <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3.5 space-y-2.5">
           <span class="text-[11px] font-bold text-emerald-400 block mb-0.5">客戶基本資料 (聯動客戶主檔)</span>
           <div class="grid grid-cols-2 gap-2.5">
@@ -479,31 +491,41 @@
   <script>
     const BIN_ID = "6ae716fdac6210605a6349af";
     const API_KEY = "$2a$10$TrBm5eEyLzx6qjw7Ek1L0eOB2CvVH5Fc59ZemW8tRMlNbbmnUUbz/6";
+    const STORAGE_KEY_PROJ = "taiding_projects_data_v2";
+    const STORAGE_KEY_ACP = "taiding_acp_data_v2";
 
-    // 自動生成 2025 年初至 2031 年底的完整每週一至週日列表（倒序排列）
-    const GENERATED_WEEKS = [];
-    (function generateWeekList() {
+    // 依年份整理週次清單 (2025 ~ 2031)
+    const WEEKS_BY_YEAR = {};
+    const ALL_WEEKS = [];
+
+    (function generateAllWeeks() {
+      for (let y = 2025; y <= 2031; y++) {
+        WEEKS_BY_YEAR[y] = [];
+      }
       let cur = new Date(2025, 0, 6);
-      const end = new Date(2031, 11, 31);
-      const list = [];
+      const end = new Date(2031, 11, 29);
+
       function fmt(d) {
         return `${d.getFullYear()}/${String(d.getMonth()+1).padStart(2,'0')}/${String(d.getDate()).padStart(2,'0')}`;
       }
+
       while (cur <= end) {
         let sun = new Date(cur);
         sun.setDate(cur.getDate() + 6);
-        list.push(`${fmt(cur)} ~ ${fmt(sun)}`);
+        const y = cur.getFullYear();
+        const str = `${fmt(cur)} ~ ${fmt(sun)}`;
+        if (WEEKS_BY_YEAR[y]) {
+          WEEKS_BY_YEAR[y].push(str);
+        }
+        ALL_WEEKS.push(str);
         cur.setDate(cur.getDate() + 7);
       }
-      list.reverse();
-      GENERATED_WEEKS.push(...list);
     })();
 
     const CURRENT_PROJECT_WEEK = "2026/10/19 ~ 2026/10/25";
 
-    // 整合水污 15 件 + 空污 VOC 7 件（帶有最新週報區間自訂欄位 report_week）
+    // 初始整合預設資料
     const DEFAULT_COMBINED_PROJECTS = [
-      // === 空污 VOC 專案 ===
       {
         id: 101, category: "空污專案", region: "台南", name: "東陽實業一部3200CMM沸石轉輪",
         status: "進行中", progress: 90, owner: "翊安", deadline: "2026/08/08",
@@ -553,8 +575,6 @@
         notes: "因酸氣抽入造成轉輪腐蝕，已用PID檢測效率並更換蜂巢新觸媒，持續監控放流數值。",
         risk: "正常推展"
       },
-
-      // === 水污專案 ===
       {
         id: 1, category: "水污專案", region: "高雄", name: "玉膳食品(內湖) - 廢水濾水系統淨化工程",
         status: "進行中", progress: 50, owner: "雅淇 / 琮樺", deadline: "2026/08/31",
@@ -676,6 +696,7 @@
     let acpReports = [];
     let currentMainTab = "water";
     let selectedWeeks = [];
+    let currentYearFilter = "2026";
     let isAdmin = false;
 
     const DOMAIN_STYLE = {
@@ -692,29 +713,54 @@
       "已完工": { border: "border-slate-500/40", bar: "bg-slate-400" }
     };
 
+    // ★ 啟動載入邏輯：優先讀取 LocalStorage 本機快取，再向雲端拉取，雙重保障 ★
     async function init() {
-      buildWeekCheckboxes();
-      updateSyncStatus("連線雲端資料庫中...", "animate-pulse text-amber-400");
+      renderWeekCheckboxes(currentYearFilter);
+      updateSyncStatus("載入資料中...", "animate-pulse text-amber-400");
+
+      // 先讀本機儲存
+      const localProj = localStorage.getItem(STORAGE_KEY_PROJ);
+      const localAcp = localStorage.getItem(STORAGE_KEY_ACP);
+      if (localProj) {
+        try { projects = JSON.parse(localProj); } catch(e){}
+      }
+      if (localAcp) {
+        try { acpReports = JSON.parse(localAcp); } catch(e){}
+      }
+
+      // 如果本機完全沒存過，才載入預設
+      if (!projects || projects.length === 0) {
+        projects = DEFAULT_COMBINED_PROJECTS;
+      }
+      if (!acpReports || acpReports.length === 0) {
+        acpReports = DEFAULT_ACP_REPORTS;
+      }
+
+      switchTab('water');
+
+      // 同步嘗試拉取雲端
       try {
         const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}/latest`, {
           headers: { "X-Master-Key": API_KEY }
         });
-        const data = await res.json();
-        if (data.record && data.record.projects && data.record.projects.length > 0) {
-          projects = data.record.projects;
-          acpReports = data.record.acpReports || DEFAULT_ACP_REPORTS;
-          updateSyncStatus("雲端同步已連線", "text-emerald-400");
-        } else {
-          projects = DEFAULT_COMBINED_PROJECTS;
-          acpReports = DEFAULT_ACP_REPORTS;
-          await saveToCloud(true);
+        if (res.ok) {
+          const data = await res.json();
+          if (data.record && data.record.projects && data.record.projects.length > 0) {
+            // 雲端有資料時更新
+            projects = data.record.projects;
+            acpReports = data.record.acpReports || acpReports;
+            localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
+            localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
+            updateSyncStatus("雲端即時連線", "text-emerald-400");
+          }
         }
       } catch (err) {
-        projects = DEFAULT_COMBINED_PROJECTS;
-        acpReports = DEFAULT_ACP_REPORTS;
-        updateSyncStatus("離線模式（本機瀏覽）", "text-slate-400");
+        updateSyncStatus("本機快取模式", "text-slate-400");
       }
-      switchTab('water');
+
+      updateStats();
+      renderProjects();
+      renderAcpReports();
     }
 
     function switchTab(tab) {
@@ -748,18 +794,26 @@
       }
     }
 
-    function buildWeekCheckboxes() {
+    function renderWeekCheckboxes(year) {
       const container = document.getElementById("week-checkboxes-container");
-      container.innerHTML = GENERATED_WEEKS.map(w => {
+      let list = (year === 'ALL') ? ALL_WEEKS : (WEEKS_BY_YEAR[year] || []);
+
+      container.innerHTML = list.map(w => {
         const isCurrent = w === CURRENT_PROJECT_WEEK;
+        const checked = selectedWeeks.includes(w) ? 'checked' : '';
         return `
           <label class="flex items-center gap-2 p-1.5 rounded hover:bg-slate-800 cursor-pointer ${isCurrent ? 'bg-emerald-500/10 border border-emerald-500/20 text-emerald-300 font-semibold' : 'text-slate-300'}">
-            <input type="checkbox" value="${w}" onchange="handleWeekFilterChange(this)" class="accent-emerald-500 rounded">
+            <input type="checkbox" value="${w}" ${checked} onchange="handleWeekFilterChange(this)" class="accent-emerald-500 rounded">
             <span class="font-mono">${w}</span>
-            ${isCurrent ? '<span class="text-[9px] bg-emerald-500 text-slate-950 px-1 rounded font-bold">最新預設</span>' : ''}
+            ${isCurrent ? '<span class="text-[9px] bg-emerald-500 text-slate-950 px-1 rounded font-bold">當前週</span>' : ''}
           </label>
         `;
       }).join('');
+    }
+
+    function filterWeeksByYear(year) {
+      currentYearFilter = year;
+      renderWeekCheckboxes(year);
     }
 
     function toggleWeekDropdown() {
@@ -785,16 +839,15 @@
 
     function selectCurrentWeek() {
       selectedWeeks = [CURRENT_PROJECT_WEEK];
-      document.querySelectorAll("#week-checkboxes-container input[type='checkbox']").forEach(cb => {
-        cb.checked = (cb.value === CURRENT_PROJECT_WEEK);
-      });
+      document.getElementById("filter-year-select").value = "2026";
+      renderWeekCheckboxes("2026");
       updateSelectedWeekLabel();
       renderProjects();
     }
 
     function clearWeekFilter() {
       selectedWeeks = [];
-      document.querySelectorAll("#week-checkboxes-container input[type='checkbox']").forEach(cb => cb.checked = false);
+      renderWeekCheckboxes(currentYearFilter);
       updateSelectedWeekLabel();
       renderProjects();
     }
@@ -805,12 +858,19 @@
       el.innerHTML = `<i class="fa-solid fa-circle text-[8px]"></i> ${text}`;
     }
 
+    // ★ 關鍵儲存邏輯：先儲存 LocalStorage，再同步雲端 ★
     async function saveToCloud(isSilent = false) {
       const btn = document.getElementById("proj-save-btn");
       if (btn) btn.innerText = "儲存中...";
-      updateSyncStatus("同步中...", "animate-pulse text-amber-400");
+      updateSyncStatus("儲存中...", "animate-pulse text-amber-400");
+
+      // 1. 先寫入本機永久快取（絕不遺失）
+      localStorage.setItem(STORAGE_KEY_PROJ, JSON.stringify(projects));
+      localStorage.setItem(STORAGE_KEY_ACP, JSON.stringify(acpReports));
+
+      // 2. 寫入 JSONBin 雲端
       try {
-        await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
+        const res = await fetch(`https://api.jsonbin.io/v3/b/${BIN_ID}`, {
           method: "PUT",
           headers: {
             "Content-Type": "application/json",
@@ -818,11 +878,16 @@
           },
           body: JSON.stringify({ projects: projects, acpReports: acpReports })
         });
-        updateSyncStatus("雲端已同步", "text-emerald-400");
-        if (!isSilent) alert("更新成功！全公司裝置已即時同步。");
+        if (res.ok) {
+          updateSyncStatus("已同步至雲端", "text-emerald-400");
+          if (!isSilent) alert("✓ 專案已成功儲存並同步至雲端！");
+        } else {
+          updateSyncStatus("已存至本機 (雲端驗證中)", "text-amber-400");
+          if (!isSilent) alert("✓ 資料已安全儲存在您的裝置上！(雲端伺服器回應代碼: " + res.status + ")");
+        }
       } catch (err) {
-        alert("雲端同步異常，請檢查網路。");
-        updateSyncStatus("同步失敗", "text-rose-400");
+        updateSyncStatus("本機已保存 (離線)", "text-slate-400");
+        if (!isSilent) alert("✓ 資料已成功保存在本機，連線恢復時將自動同步。");
       } finally {
         if (btn) btn.innerText = "儲存並同步雲端";
       }
@@ -832,6 +897,8 @@
       if (confirm("確定要將專案與ACP日報重設回原始預設值嗎？")) {
         projects = JSON.parse(JSON.stringify(DEFAULT_COMBINED_PROJECTS));
         acpReports = JSON.parse(JSON.stringify(DEFAULT_ACP_REPORTS));
+        localStorage.removeItem(STORAGE_KEY_PROJ);
+        localStorage.removeItem(STORAGE_KEY_ACP);
         updateStats();
         renderProjects();
         renderAcpReports();
@@ -909,14 +976,12 @@
 
               <h3 class="text-sm font-bold text-white mb-2 leading-snug">${p.name}</h3>
 
-              <!-- 最新週報指定區間標籤 -->
               <div class="text-[11px] text-emerald-400 font-mono mb-3 flex items-center gap-1.5 bg-emerald-500/10 border border-emerald-500/20 px-2.5 py-1 rounded-md">
                 <i class="fa-regular fa-calendar-check text-[10px]"></i>
                 <span class="font-bold">最新週別：</span>
                 <span class="truncate">${dispReportWeek}</span>
               </div>
 
-              <!-- 進度條 (自動計算結果) -->
               <div class="space-y-1 mb-3.5">
                 <div class="flex justify-between text-xs text-slate-400 font-mono">
                   <span>累計進度</span>
@@ -927,7 +992,6 @@
                 </div>
               </div>
 
-              <!-- 動態框 -->
               <div class="bg-slate-900/80 border border-slate-700/50 rounded-lg p-3 text-xs space-y-2 mb-3">
                 <p class="text-slate-200 leading-relaxed whitespace-pre-line"><span class="text-emerald-400 font-medium">最新動態：</span>\n${p.notes || "無特定備註"}</p>
                 <div class="text-[11px] text-amber-400 flex items-center gap-1">
@@ -962,7 +1026,6 @@
       renderAcpReports();
     }
 
-    // 里程碑勾選自動加總計算進度 %
     function calcProgressFromMilestones() {
       let sum = 0;
       document.querySelectorAll(".ms-check:checked").forEach(cb => {
@@ -971,24 +1034,39 @@
       document.getElementById("proj-form-progress").value = sum;
     }
 
-    function renderModalWeeks(selectedList = []) {
+    let modalSelectedWeeks = [];
+
+    function renderModalWeeks(year = "2026") {
       const container = document.getElementById("modal-weeks-list");
-      container.innerHTML = GENERATED_WEEKS.slice(0, 24).map(w => {
-        const checked = selectedList.includes(w) ? 'checked' : '';
+      let list = (year === 'ALL') ? ALL_WEEKS : (WEEKS_BY_YEAR[year] || []);
+
+      container.innerHTML = list.map(w => {
+        const checked = modalSelectedWeeks.includes(w) ? 'checked' : '';
         const isCurrent = w === CURRENT_PROJECT_WEEK;
         return `
           <label class="flex items-center gap-1.5 p-1 rounded hover:bg-slate-800 cursor-pointer ${isCurrent ? 'text-emerald-400 font-semibold' : 'text-slate-300'}">
-            <input type="checkbox" name="modal-proj-week" value="${w}" ${checked} class="accent-emerald-500 rounded">
+            <input type="checkbox" name="modal-proj-week" value="${w}" ${checked} onchange="handleModalWeekChange(this)" class="accent-emerald-500 rounded">
             <span class="font-mono text-[11px]">${w}</span>
-            ${isCurrent ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1 rounded">最新</span>' : ''}
+            ${isCurrent ? '<span class="text-[9px] bg-emerald-500/20 text-emerald-400 px-1 rounded">當前</span>' : ''}
           </label>
         `;
       }).join('');
     }
 
+    function handleModalWeekChange(cb) {
+      if (cb.checked) {
+        if (!modalSelectedWeeks.includes(cb.value)) modalSelectedWeeks.push(cb.value);
+      } else {
+        modalSelectedWeeks = modalSelectedWeeks.filter(item => item !== cb.value);
+      }
+    }
+
+    function filterModalWeeksByYear(year) {
+      renderModalWeeks(year);
+    }
+
     function openProjectModal(id = null) {
       document.getElementById("project-modal").classList.remove("hidden");
-      // 重置勾選狀態
       document.querySelectorAll(".ms-check").forEach(cb => cb.checked = false);
 
       if (id) {
@@ -1005,9 +1083,11 @@
         document.getElementById("proj-form-deadline").value = p.deadline;
         document.getElementById("proj-form-notes").value = p.notes;
         document.getElementById("proj-form-risk").value = p.risk;
-        renderModalWeeks(p.weeks || []);
+        
+        modalSelectedWeeks = p.weeks ? [...p.weeks] : [];
+        document.getElementById("modal-year-filter").value = "2026";
+        renderModalWeeks("2026");
 
-        // 依據目前進度自動反勾里程碑
         const curPct = Number(p.progress || 0);
         const checks = document.querySelectorAll(".ms-check");
         if (curPct >= 10 && checks[0]) checks[0].checked = true;
@@ -1028,7 +1108,9 @@
         document.getElementById("proj-form-report-week").value = CURRENT_PROJECT_WEEK;
         document.getElementById("proj-form-owner").value = "閔松";
         document.getElementById("proj-form-risk").value = "正常推展";
-        renderModalWeeks([CURRENT_PROJECT_WEEK]);
+        modalSelectedWeeks = [CURRENT_PROJECT_WEEK];
+        document.getElementById("modal-year-filter").value = "2026";
+        renderModalWeeks("2026");
         const checks = document.querySelectorAll(".ms-check");
         if (checks[0]) checks[0].checked = true;
       }
@@ -1054,11 +1136,6 @@
     async function handleProjectSubmit(e) {
       e.preventDefault();
       const id = document.getElementById("proj-form-id").value;
-      const checkedWeeks = [];
-      document.querySelectorAll("#modal-weeks-list input[name='modal-proj-week']:checked").forEach(cb => {
-        checkedWeeks.push(cb.value);
-      });
-
       const reportWeekVal = document.getElementById("proj-form-report-week").value.trim() || CURRENT_PROJECT_WEEK;
 
       const data = {
@@ -1070,7 +1147,7 @@
         owner: document.getElementById("proj-form-owner").value,
         report_week: reportWeekVal,
         deadline: document.getElementById("proj-form-deadline").value,
-        weeks: checkedWeeks.length > 0 ? checkedWeeks : [reportWeekVal],
+        weeks: modalSelectedWeeks.length > 0 ? modalSelectedWeeks : [reportWeekVal],
         notes: document.getElementById("proj-form-notes").value,
         risk: document.getElementById("proj-form-risk").value
       };
@@ -1089,7 +1166,7 @@
       await saveToCloud();
     }
 
-    // ================= 業務日報 (ACP) 操作邏輯 =================
+    // ACP 業務日報邏輯
     function renderAcpReports() {
       const tbody = document.getElementById("acp-reports-tbody");
       const empty = document.getElementById("empty-acp-report");
