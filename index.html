@@ -251,8 +251,7 @@
     </div>
   </main>
 
-  <!-- ================= 彈窗元件群組 ================= -->
-  <!-- AI Agent 智慧代理分析彈窗 -->
+  <!-- ================= AI Agent 智慧代理分析彈窗 ================= -->
   <div id="agent-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
     <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-2xl max-h-[90vh] overflow-y-auto p-6 space-y-4 shadow-2xl">
       <div class="flex justify-between items-center border-b border-slate-700 pb-3">
@@ -271,7 +270,7 @@
           </div>
         </div>
         <div>
-          <label class="block text-slate-400 mb-1 font-medium">向 AI Agent 提問：</label>
+          <label class="block text-slate-400 mb-1 font-medium">向 AI Agent 提問 (例如：「目前有哪些案場在評估中？」或「統計各負責人專案數」)：</label>
           <div class="flex gap-2">
             <input type="text" id="agent-question-input" placeholder="輸入您的指令或查詢關鍵字..." class="flex-1 bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
             <button onclick="askAgent()" class="px-4 py-2 bg-emerald-600 hover:bg-emerald-500 text-white font-bold rounded-lg transition">送出查詢</button>
@@ -294,30 +293,32 @@
         </div>
         <button onclick="closeUserManagerModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
       </div>
+
+      <!-- 新增人員區塊 -->
       <form onsubmit="handleCreateUser(event)" class="bg-slate-900/90 border border-purple-500/30 p-3.5 rounded-xl space-y-3 text-xs">
         <span class="font-bold text-purple-300 block"><i class="fa-solid fa-user-plus mr-1"></i> 建立新使用者 / 授權帳號</span>
-        <div class="grid grid-cols-1 sm:grid-cols-5 gap-2.5">
+        <div class="grid grid-cols-2 sm:grid-cols-4 gap-2.5">
           <input type="text" id="new-user-account" placeholder="帳號代號 (如: minsong)" required class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none font-mono">
           <input type="text" id="new-user-name" placeholder="真實姓名 (如: 閔松)" required class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none">
-          <input type="email" id="new-user-email" placeholder="綁定信箱 (Email)" required class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none">
           <input type="password" id="new-user-pwd" placeholder="預設密碼" required class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none">
           <select id="new-user-role" class="bg-slate-800 border border-slate-700 rounded px-2.5 py-1.5 text-slate-200 outline-none">
-            <option value="VIEWER">可檢視人員</option>
-            <option value="EDITOR">可編輯人員</option>
-            <option value="ADMIN">系統管理員</option>
+            <option value="VIEWER">可檢視人員 (Viewer)</option>
+            <option value="EDITOR">可編輯人員 (Editor)</option>
+            <option value="ADMIN">系統管理員 (Admin)</option>
           </select>
         </div>
         <div class="flex justify-end">
           <button type="submit" class="px-3.5 py-1.5 bg-purple-600 hover:bg-purple-500 text-white font-bold rounded text-xs transition shadow">新增此帳號</button>
         </div>
       </form>
+
+      <!-- 帳號列表清單 -->
       <div class="overflow-x-auto border border-slate-700 rounded-xl">
         <table class="w-full text-left text-xs text-slate-300">
           <thead class="bg-slate-900 text-slate-400 uppercase text-[11px]">
             <tr>
               <th class="py-2.5 px-3">帳號</th>
               <th class="py-2.5 px-3">姓名</th>
-              <th class="py-2.5 px-3">綁定信箱</th>
               <th class="py-2.5 px-3">權限</th>
               <th class="py-2.5 px-3">狀態</th>
               <th class="py-2.5 px-3 text-right">資安與權限操作</th>
@@ -348,7 +349,7 @@
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-slate-400 mb-1 font-medium">專案類別</label>
-            <select id="proj-form-category" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
+            <select id="proj-form-category" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-emerald-500 outline-none">
               <option value="水污專案">💧 水污專案</option>
               <option value="空污專案">💨 空污 VOC 專案</option>
               <option value="廠內工程">🏢 廠內工程</option>
@@ -356,7 +357,7 @@
           </div>
           <div>
             <label class="block text-slate-400 mb-1 font-medium">所在地區</label>
-            <select id="proj-form-region" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
+            <select id="proj-form-region" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-emerald-500 outline-none">
               <option value="苗栗">苗栗</option>
               <option value="新竹">新竹</option>
               <option value="桃園">桃園</option>
@@ -372,13 +373,13 @@
 
         <div>
           <label class="block text-slate-400 mb-1 font-medium">客戶 / 案場名稱</label>
-          <input type="text" id="proj-form-name" required placeholder="如：東陽實業一部3200CMM沸石轉輪" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
+          <input type="text" id="proj-form-name" required placeholder="如：東陽實業一部3200CMM沸石轉輪" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-emerald-500 outline-none">
         </div>
 
         <div class="grid grid-cols-2 gap-3">
           <div>
             <label class="block text-slate-400 mb-1 font-medium">當前狀態</label>
-            <select id="proj-form-status" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
+            <select id="proj-form-status" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-emerald-500 outline-none">
               <option value="進行中">進行中</option>
               <option value="評估中">評估中</option>
               <option value="保養類">保養類 / 歲修</option>
@@ -389,7 +390,7 @@
           </div>
           <div>
             <label class="block text-slate-400 mb-1 font-medium">負責人 (Owner)</label>
-            <select id="proj-form-owner" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
+            <select id="proj-form-owner" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-emerald-500 outline-none">
               <option value="閔松">閔松</option>
               <option value="琮樺">琮樺</option>
               <option value="雅淇 / 琮樺">雅淇 / 琮樺</option>
@@ -460,7 +461,7 @@
           <label class="block text-emerald-400 mb-1 font-bold flex items-center gap-1.5">
             <i class="fa-solid fa-keyboard"></i> 最新週報動態 / 現場進度 (手動填寫更新)
           </label>
-          <textarea id="proj-form-notes" rows="3" required placeholder="輸入本週現場進度、施工狀況或請款作業..." class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2 text-slate-100 outline-none"></textarea>
+          <textarea id="proj-form-notes" rows="3" required placeholder="輸入本週現場進度、施工狀況或請款作業..." class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2 text-slate-100 focus:border-emerald-400 outline-none"></textarea>
         </div>
 
         <!-- 現場相片模組 -->
@@ -485,7 +486,7 @@
 
         <div>
           <label class="block text-slate-400 mb-1 font-medium">風險與待辦支援</label>
-          <select id="proj-form-risk" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
+          <select id="proj-form-risk" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 focus:border-emerald-500 outline-none">
             <option value="正常推展">正常推展</option>
             <option value="等待客戶回覆確認">等待客戶回覆確認</option>
             <option value="現場施工天候/颱風延期">現場施工天候/颱風延期</option>
@@ -526,7 +527,7 @@
         
         <div class="grid grid-cols-3 gap-3">
           <div>
-            <label class="block text-slate-400 mb-1 font-medium">單據日期</label>
+            <label class="block text-slate-400 mb-1 font-medium">單據日期 (行事曆選取)</label>
             <input type="date" id="acp-date" min="2025-01-01" max="2031-12-31" required class="w-full bg-slate-900 border border-slate-700 rounded-lg px-2.5 py-1.5 text-slate-200 outline-none font-mono">
           </div>
           <div>
@@ -551,7 +552,7 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-slate-400 mb-1 font-medium">活動方式</label>
+            <label class="block text-slate-400 mb-1 font-medium">活動方式 (選單)</label>
             <select id="acp-act-type" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
               <option value="陌生開發">1. 陌生開發 (Cold Call / 首次拜訪)</option>
               <option value="電話訪談">2. 電話訪談 (追蹤需求 / 進度對接)</option>
@@ -564,7 +565,7 @@
             </select>
           </div>
           <div>
-            <label class="block text-slate-400 mb-1 font-medium">商機/專案進程</label>
+            <label class="block text-slate-400 mb-1 font-medium">商機/專案進程 (ACP階段)</label>
             <select id="acp-stage" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
               <option value="初步接觸">1. 初步接觸 (建立窗口與背景)</option>
               <option value="需求確認">2. 需求確認 (掌握放流標準與風量)</option>
@@ -578,7 +579,7 @@
         </div>
 
         <div class="bg-slate-900/90 border border-slate-700/80 rounded-xl p-3.5 space-y-2.5">
-          <span class="text-[11px] font-bold text-emerald-400 block mb-0.5">客戶基本資料</span>
+          <span class="text-[11px] font-bold text-emerald-400 block mb-0.5">客戶基本資料 (聯動客戶主檔)</span>
           <div class="grid grid-cols-2 gap-2.5">
             <div>
               <label class="block text-slate-400 mb-0.5 text-[10px]">客戶全名 *</label>
@@ -603,7 +604,7 @@
 
         <div>
           <label class="block text-emerald-400 mb-1 font-bold flex items-center gap-1.5">
-            <i class="fa-solid fa-file-lines"></i> 活動內容說明
+            <i class="fa-solid fa-file-lines"></i> 活動內容說明 (洽談重點、客戶反饋與結論)
           </label>
           <textarea id="acp-content" rows="3" required placeholder="詳述今日與客戶訪談內容、需求規格、預算狀況及現場討論結論..." class="w-full bg-slate-900 border border-emerald-500/50 rounded-lg px-3 py-2 text-slate-100 outline-none"></textarea>
         </div>
@@ -630,11 +631,11 @@
 
         <div class="grid grid-cols-2 gap-3">
           <div>
-            <label class="block text-slate-400 mb-1 font-medium">下次預定追蹤日期</label>
+            <label class="block text-slate-400 mb-1 font-medium">下次預定追蹤日期 (行事曆選取)</label>
             <input type="date" id="acp-next-date" min="2025-01-01" max="2031-12-31" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-1.5 text-slate-200 outline-none font-mono">
           </div>
           <div>
-            <label class="block text-slate-400 mb-1 font-medium">預定行動方式</label>
+            <label class="block text-slate-400 mb-1 font-medium">預定行動方式 (選單)</label>
             <select id="acp-next-action" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-200 outline-none">
               <option value="提供設備規劃報價單">提供設備規劃報價單</option>
               <option value="電話追蹤客戶評估進度">電話追蹤客戶評估進度</option>
@@ -676,16 +677,11 @@
       <form onsubmit="handleLogin(event)" class="space-y-3.5 text-xs">
         <div>
           <label class="block text-slate-400 mb-1 font-medium">帳號 (Username)</label>
-          <input type="text" id="login-username" required placeholder="如: celeste0909" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
+          <input type="text" id="login-username" required placeholder="如: minsong 或 admin" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-emerald-500 outline-none">
         </div>
         <div>
           <label class="block text-slate-400 mb-1 font-medium">密碼 (Password)</label>
-          <input type="password" id="login-password" required placeholder="請輸入密碼" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
-        </div>
-        <div class="flex justify-between items-center text-xs">
-          <button type="button" onclick="openForgotPasswordModal()" class="text-cyan-400 hover:underline">
-            <i class="fa-solid fa-key text-[10px] mr-1"></i> 忘記密碼 / 信箱驗證
-          </button>
+          <input type="password" id="login-password" required placeholder="請輸入密碼" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 focus:border-emerald-500 outline-none">
         </div>
         <div id="login-error-msg" class="hidden text-rose-400 text-[11px] font-medium flex items-center gap-1">
           <i class="fa-solid fa-circle-exclamation"></i> 帳號密碼錯誤或已被停用！
@@ -695,37 +691,12 @@
           <button type="submit" class="px-5 py-2 rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white font-bold">登入系統</button>
         </div>
       </form>
-    </div>
-  </div>
-
-  <!-- ★ 忘記密碼與信箱驗證彈窗 ★ -->
-  <div id="forgot-pwd-modal" class="fixed inset-0 bg-black/85 backdrop-blur-sm z-50 flex items-center justify-center hidden p-4">
-    <div class="bg-slate-800 border border-slate-700 rounded-2xl w-full max-w-sm p-6 space-y-4 shadow-2xl">
-      <div class="flex justify-between items-center border-b border-slate-700 pb-3">
-        <h3 class="text-base font-bold text-white flex items-center gap-2">
-          <i class="fa-solid fa-envelope-circle-check text-cyan-400"></i> 信箱驗證與重設密碼
-        </h3>
-        <button onclick="closeForgotPasswordModal()" class="text-slate-400 hover:text-white"><i class="fa-solid fa-xmark text-lg"></i></button>
+      <div class="pt-3 border-t border-slate-700/80 text-[11px] text-slate-400 space-y-1">
+        <div class="text-amber-400 font-semibold"><i class="fa-solid fa-lock mr-1"></i> 僅限溙鼎內部人員登入</div>
+        <div>若帳號遺忘或有任何問題請聯繫管理員：</div>
+        <div class="font-mono text-emerald-400 select-all">Email: s0982990034@gmail.com</div>
+        <div class="font-mono text-cyan-400 select-all">電話: 06-2330668 分機 37</div>
       </div>
-      <form onsubmit="handleForgotPasswordSubmit(event)" class="space-y-3.5 text-xs">
-        <div>
-          <label class="block text-slate-400 mb-1 font-medium">請輸入您的帳號 (Username)</label>
-          <input type="text" id="forgot-username" required placeholder="如: celeste0909" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-400 mb-1 font-medium">請輸入綁定的通知信箱</label>
-          <input type="email" id="forgot-email" required placeholder="請輸入在後台登記的信箱" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
-        </div>
-        <div>
-          <label class="block text-slate-400 mb-1 font-medium">設定新密碼 (至少 4 碼)</label>
-          <input type="password" id="forgot-new-pwd" minlength="4" required placeholder="輸入新密碼" class="w-full bg-slate-900 border border-slate-700 rounded-lg px-3 py-2 text-slate-100 outline-none">
-        </div>
-        <div id="forgot-error-msg" class="hidden text-rose-400 text-[11px] font-medium"></div>
-        <div class="pt-2 flex justify-end gap-2 border-t border-slate-700">
-          <button type="button" onclick="closeForgotPasswordModal()" class="px-3.5 py-2 rounded-lg bg-slate-700 hover:bg-slate-600 text-slate-300">取消</button>
-          <button type="submit" class="px-5 py-2 rounded-lg bg-cyan-600 hover:bg-cyan-500 text-white font-bold">驗證並更新密碼</button>
-        </div>
-      </form>
     </div>
   </div>
 
@@ -1004,45 +975,124 @@
       }
     ];
 
+    // ================= AI Agent 智慧助理決策核心 =================
+    function openAgentModal() {
+      document.getElementById("agent-modal").classList.remove("hidden");
+      generateAgentSummary();
+    }
+    function closeAgentModal() {
+      document.getElementById("agent-modal").classList.add("hidden");
+    }
+
+    function generateAgentSummary() {
+      const waterCount = projects.filter(p => p.category === '水污專案' || p.category === '廠內工程').length;
+      const vocCount = projects.filter(p => p.category === '空污專案').length;
+      const ongoing = projects.filter(p => p.status === '進行中').length;
+      const evalCount = projects.filter(p => p.status === '評估中').length;
+
+      const summaryText = `【AI Agent 系統全域掃描報告】
+• 目前水污/廠內專案共 ${waterCount} 筆，空污 VOC 專案共 ${vocCount} 筆。
+• 進行中案場：${ongoing} 筆，商機評估中：${evalCount} 筆。
+• 本週預設推進週期：10/26 - 10/30。所有專案進度與里程碑計算正常，無異常延宕風險。`;
+
+      document.getElementById("agent-summary-content").innerText = summaryText;
+    }
+
+    function askAgent() {
+      const q = document.getElementById("agent-question-input").value.trim().toLowerCase();
+      const ansBox = document.getElementById("agent-answer-box");
+      ansBox.classList.remove("hidden");
+
+      if (!q) {
+        ansBox.innerText = "請輸入您想查詢的問題或指令！";
+        return;
+      }
+
+      if (q.includes("評估") || q.includes("商機")) {
+        const list = projects.filter(p => p.status === '評估中');
+        ansBox.innerText = `【AI Agent 查詢結果】目前評估中的案場共 ${list.length} 筆：\n` + list.map(p => `• ${p.name} (${p.owner})`).join('\n');
+      } else if (q.includes("負責人") || q.includes("統計")) {
+        ansBox.innerText = `【AI Agent 統計】目前專案負責人分佈：\n• 閔松：主要負責水污與銅鑼科學園區案場\n• 翊安：負責東陽實業系列沸石轉輪\n• 琮樺：負責復盛精密與瓜瓜園整改`;
+      } else if (q.includes("聯絡") || q.includes("管理員")) {
+        ansBox.innerText = `【AI Agent 協助】系統管理員信箱：s0982990034@gmail.com，電話：06-2330668 分機 37。`;
+      } else {
+        ansBox.innerText = `【AI Agent 智慧答覆】已收到您的指令「${q}」。目前戰情室運作順暢，您可以透過右上角「新增專案案場」或「匯入 Excel」隨時擴充資料庫！`;
+      }
+    }
+
+    const WEEK_DAYS_ZH = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
+    function padZero(num) { return String(num).padStart(2, '0'); }
+
+    function getSystemDateTime() {
+      const now = new Date();
+      const rocYear = now.getFullYear() - 1911;
+      const y = now.getFullYear();
+      const m = now.getMonth() + 1;
+      const d = now.getDate();
+      const dayZh = WEEK_DAYS_ZH[now.getDay()];
+      const hh = padZero(now.getHours());
+      const mm = padZero(now.getMinutes());
+      const ss = padZero(now.getSeconds());
+      const fullString = `民國 ${rocYear} 年 ${m} 月 ${d} 日 (${y}) ${hh}:${mm}:${ss} ${dayZh}`;
+      const shortDate = `${y}-${padZero(m)}-${padZero(d)}`;
+      const zhDateOnly = `民國 ${rocYear} 年 ${m} 月 ${d} 日 ${dayZh}`;
+      return { now, rocYear, y, m, d, dayZh, hh, mm, ss, fullString, shortDate, zhDateOnly };
+    }
+
+    function calculateCurrentWeekRange(baseDate = new Date()) {
+      const d = new Date(baseDate);
+      const day = d.getDay();
+      const diffToMonday = day === 0 ? -6 : 1 - day;
+      const monday = new Date(d);
+      monday.setDate(d.getDate() + diffToMonday);
+      const friday = new Date(monday);
+      friday.setDate(monday.getDate() + 4);
+      const sunday = new Date(monday);
+      sunday.setDate(monday.getDate() + 6);
+      const monStr = `${monday.getFullYear()}/${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())}`;
+      const friStr = `${padZero(friday.getMonth()+1)}/${padZero(friday.getDate())}`;
+      const sunStr = `${sunday.getFullYear()}/${padZero(sunday.getMonth()+1)}/${padZero(sunday.getDate())}`;
+      const workWeekStr = `${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())} - ${friStr}`;
+      const fullWeekStr = `${monStr} ~ ${sunStr}`;
+      return { monday, friday, sunday, workWeekStr, fullWeekStr };
+    }
+
+    function startRealtimeClock() {
+      function updateClock() {
+        try {
+          const dt = getSystemDateTime();
+          const liveElem = document.getElementById("live-time-display");
+          if (liveElem) liveElem.innerText = dt.fullString;
+        } catch (e) {}
+      }
+      updateClock();
+      setInterval(updateClock, 1000);
+    }
+
+    const WEEKS_BY_YEAR = {};
+    const ALL_WEEKS = [];
+    (function generateAllWeeks() {
+      for (let y = 2025; y <= 2031; y++) { WEEKS_BY_YEAR[y] = []; }
+      let cur = new Date(2025, 0, 6);
+      const end = new Date(2031, 11, 29);
+      function fmt(d) { return `${d.getFullYear()}/${padZero(d.getMonth()+1)}/${padZero(d.getDate())}`; }
+      while (cur <= end) {
+        let sun = new Date(cur);
+        sun.setDate(cur.getDate() + 6);
+        const y = cur.getFullYear();
+        const str = `${fmt(cur)} ~ ${fmt(sun)}`;
+        if (WEEKS_BY_YEAR[y]) WEEKS_BY_YEAR[y].push(str);
+        ALL_WEEKS.push(str);
+        cur.setDate(cur.getDate() + 7);
+      }
+    })();
+
     const DEFAULT_SYSTEM_USERS = [
-      { username: "celeste0909", password: "QaZ1994412****", name: "張雯絜/系統管理員 (分機37)", email: "celeste@tridentgreen.com.tw", role: "ADMIN", status: "active" },
-      { username: "lion", password: "taiding888", name: "張佑銘總經理 ", email: "leon@tridentgreen.com.tw", role: "EDITOR", status: "active" },
-      { username: "minsong", password: "ms1234", name: "黃閔松副總經理", email: "alexg@tridentgreen.com.tw", role: "EDITOR", status: "active" },
-      { username: "yuhan", password: "88888888", name: "吳郁涵 (分機35)", email: "yuhan@tridentgreen.com.tw", role: "EDITOR", status: "active" },
-      { username: "yachi", password: "88888888", name: "詹雅琪/水務經理 (分機27)", email: "yachi@tridentgreen.com.tw", role: "EDITOR", status: "active" },
-      { username: "tsunghua", password: "th1234", name: "陳琮樺/水務工程師 (分機17)", email: "conghua@tridentgreen.com.tw", role: "EDITOR", status: "active" },
-      { username: "yian", password: "ya1234", name: "李翊安 (分機24)", email: "lan@tridentgreen.com.tw", role: "EDITOR", status: "active" },
-      { username: "yuhang", password: "yh1234", name: "劉于豪 (分機17)", email: "yuhang@taiding.com", role: "EDITOR", status: "active" },
-      { username: "taiyuan", password: "ty1234", name: "陳泰源 (分機27)", email: "terry.chen@tridentgreen.com.tw", role: "EDITOR", status: "active" },
-      { username: "jingzhong", password: "jc1234", name: "尤景鍾 (分機16)", email: "jingzhong@taiding.com", role: "EDITOR", status: "active" },
-      { username: "baolong", password: "bl1234", name: "邱保龍 (分機24)", email: "baolong@taiding.com", role: "EDITOR", status: "active" },
-      { username: "jianshun", password: "js1234", name: "曾建順 (分機23)", email: "jstseng@@tridentgreen.com.tw", role: "EDITOR", status: "active" },
-      { username: "fanyuyuan", password: "fy1234", name: "范又文 (分機24)", email: "fanyuyuan@taiding.com", role: "VIEWER", status: "active" },
-      { username: "yangkun", password: "yk1234", name: "楊坤憲 (分機24)", email: "yangkun@taiding.com", role: "VIEWER", status: "active" },
-      { username: "zhangming", password: "zm1234", name: "張銘仁 (分機24)", email: "cadman@tridentgreen.com.tw", role: "VIEWER", status: "active" },
-      { username: "caizong", password: "cz1234", name: "蔡宗欽 (分機24)", email: "caizong@taiding.com", role: "VIEWER", status: "active" },
-      { username: "hujing", password: "hj1234", name: "胡景仁 (分機24)", email: "hujing@taiding.com", role: "VIEWER", status: "active" },
-      { username: "fanzhong", password: "fz1234", name: "范仲榮 (分機24)", email: "fanzhong@taiding.com", role: "VIEWER", status: "active" },
-      { username: "chenchun", password: "cc1234", name: "陳春青 (分機24)", email: "chenchun@taiding.com", role: "VIEWER", status: "active" },
-      { username: "hongyu", password: "hy1234", name: "洪玉玲 (分機24)", email: "hongyu@taiding.com", role: "VIEWER", status: "active" },
-      { username: "guoling", password: "gl1234", name: "郭衿餘 (分機14)", email: "guoling@taiding.com", role: "VIEWER", status: "active" },
-      { username: "fangli", password: "fl1234", name: "方麗美 (分機15)", email: "limei@tridentgreen.com.tw", role: "VIEWER", status: "active" },
-      { username: "huangliang", password: "hl1234", name: "黃良宇 (分機16)", email: "huangliang@taiding.com", role: "VIEWER", status: "active" },
-      { username: "guowen", password: "gw1234", name: "郭文欣 (分機16)", email: "guowen@taiding.com", role: "VIEWER", status: "active" },
-      { username: "wangshi", password: "ws1234", name: "王士銘 (分機16)", email: "wangshi@taiding.com", role: "VIEWER", status: "active" },
-      { username: "zhengnai", password: "zn1234", name: "鄭婉吟 (分機18)", email: "zhengnai@taiding.com", role: "VIEWER", status: "active" },
-      { username: "xuxiang", password: "xx1234", name: "徐湘昀 (分機11)", email: "xuxiang@taiding.com", role: "VIEWER", status: "active" },
-      { username: "chennai", password: "cn1234", name: "陳乃瑄 (分機22)", email: "chennai@taiding.com", role: "VIEWER", status: "active" },
-      { username: "luomo", password: "lm1234", name: "羅泳宸 (分機22)", email: "Chen@tridentgreen.com.tw", role: "VIEWER", status: "active" },
-      { username: "jiyan", password: "jy1234", name: "紀岩勳 (分機13)", email: "ansonchi@tridentgreen.com.tw", role: "VIEWER", status: "active" },
-      { username: "chenya", password: "cy1234", name: "陳雅惠 (分機34)", email: "chenya@taiding.com", role: "VIEWER", status: "active" },
-      { username: "zhengyuan", password: "zy1234", name: "鄭嫚資 (分機33)", email: "zhengyuan@taiding.com", role: "VIEWER", status: "active" },
-      { username: "jiangjia", password: "jj1234", name: "江家婕 (分機28)", email: "jiangjia@taiding.com", role: "VIEWER", status: "active" },
-      { username: "zhongyi", password: "zy2123", name: "鍾宜均 (分機28)", email: "zhongyi@taiding.com", role: "VIEWER", status: "active" },
-      { username: "jiangjun", password: "jj2123", name: "姜俊宇", email: "jiangjun@taiding.com", role: "VIEWER", status: "active" },
-      { username: "panyuan", password: "py1234", name: "潘玉娟", email: "panyuan@taiding.com", role: "VIEWER", status: "active" },
-      { username: "liuxin", password: "lx1234", name: "劉信利", email: "liuxin@taiding.com", role: "VIEWER", status: "active" },
-      { username: "guest", password: "guest123", name: "跨部門/外賓檢視", email: "guest@taiding.com", role: "VIEWER", status: "active" }
+      { username: "admin", password: "taiding888", name: "總經理 / 最高管理員", role: "ADMIN", status: "active" },
+      { username: "minsong", password: "ms1234", name: "閔松", role: "EDITOR", status: "active" },
+      { username: "tsunghua", password: "th1234", name: "琮樺", role: "EDITOR", status: "active" },
+      { username: "yian", password: "ya1234", name: "翊安", role: "EDITOR", status: "active" },
+      { username: "guest", password: "guest123", name: "跨部門/外賓檢視", role: "VIEWER", status: "active" }
     ];
 
     const BIN_ID = "6ae716fdac6210605a6349af";
@@ -1279,50 +1329,6 @@
       }
     }
 
-    // 忘記密碼與信箱驗證控制函式
-    function openForgotPasswordModal() {
-      closeLoginModal();
-      document.getElementById("forgot-pwd-modal").classList.remove("hidden");
-      document.getElementById("forgot-error-msg").classList.add("hidden");
-      document.getElementById("forgot-username").value = "";
-      document.getElementById("forgot-email").value = "";
-      document.getElementById("forgot-new-pwd").value = "";
-    }
-
-    function closeForgotPasswordModal() {
-      document.getElementById("forgot-pwd-modal").classList.add("hidden");
-    }
-
-    async function handleForgotPasswordSubmit(e) {
-      e.preventDefault();
-      const username = document.getElementById("forgot-username").value.trim().toLowerCase();
-      const email = document.getElementById("forgot-email").value.trim().toLowerCase();
-      const newPwd = document.getElementById("forgot-new-pwd").value.trim();
-      const errorDiv = document.getElementById("forgot-error-msg");
-
-      const user = systemUsers.find(u => u.username.toLowerCase() === username);
-      if (!user) {
-        errorDiv.innerText = "找不到此帳號代號！";
-        errorDiv.classList.remove("hidden");
-        return;
-      }
-
-      const registeredEmail = (user.email || "").trim().toLowerCase();
-      if (!registeredEmail || email !== registeredEmail) {
-        errorDiv.innerText = "輸入的驗證信箱與該帳號登記的信箱不符！";
-        errorDiv.classList.remove("hidden");
-        return;
-      }
-
-      user.password = newPwd;
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
-      await saveToCloud(true);
-
-      closeForgotPasswordModal();
-      alert(`✓ 帳號【${user.name}】驗證成功！新密碼已生效，請重新登入。`);
-      openLoginModal();
-    }
-
     function openUserManagerModal() { if (!canAdmin()) return; document.getElementById("user-mgmt-modal").classList.remove("hidden"); renderUsersTable(); }
     function closeUserManagerModal() { document.getElementById("user-mgmt-modal").classList.add("hidden"); }
 
@@ -1335,12 +1341,10 @@
           <tr class="hover:bg-slate-800/60 transition">
             <td class="py-2.5 px-3 font-mono font-bold text-white">${u.username}</td>
             <td class="py-2.5 px-3">${u.name}</td>
-            <td class="py-2.5 px-3 font-mono text-cyan-300 text-[11px]">${u.email || "未設定信箱"}</td>
             <td class="py-2.5 px-3"><span class="px-2 py-0.5 rounded text-[10px] font-bold border ${roleInfo.color}">${roleInfo.label}</span></td>
             <td class="py-2.5 px-3"><span class="${u.status === 'active' ? 'text-emerald-400' : 'text-slate-500'} font-bold">${u.status === 'active' ? '● 啟用中' : '○ 已停用'}</span></td>
             <td class="py-2.5 px-3 text-right space-x-1 whitespace-nowrap">
               <button onclick="editUserPrompt(${idx})" class="text-cyan-400 hover:text-cyan-300 font-medium">修改</button>
-              <button onclick="editUserEmailPrompt(${idx})" class="text-emerald-400 hover:text-emerald-300 font-medium">信箱</button>
               <button onclick="changeUserRole(${idx})" class="text-blue-400 hover:text-blue-300 font-medium">身分</button>
               <button onclick="resetUserPasswordPrompt(${idx})" class="text-amber-400 hover:text-amber-300 font-medium">密碼</button>
               <button onclick="toggleUserStatus(${idx})" class="${u.status === 'active' ? 'text-rose-400 hover:text-rose-300' : 'text-emerald-400 hover:text-emerald-300'} font-medium">
@@ -1357,11 +1361,10 @@
       e.preventDefault();
       const account = document.getElementById("new-user-account").value.trim().toLowerCase();
       const name = document.getElementById("new-user-name").value.trim();
-      const email = document.getElementById("new-user-email").value.trim().toLowerCase();
       const pwd = document.getElementById("new-user-pwd").value.trim();
       const role = document.getElementById("new-user-role").value;
       if (systemUsers.some(u => u.username.toLowerCase() === account)) { alert("帳號已被使用！"); return; }
-      systemUsers.push({ username: account, password: pwd, name: name, email: email, role: role, status: "active" });
+      systemUsers.push({ username: account, password: pwd, name: name, role: role, status: "active" });
       localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
       renderUsersTable();
       await saveToCloud(true);
@@ -1369,6 +1372,7 @@
       e.target.reset();
     }
 
+    // ★ 新增：修改帳號與姓名機制 ★
     async function editUserPrompt(idx) {
       const u = systemUsers[idx];
       const newAcc = prompt(`修改帳號代號 (英文/數字)：`, u.username);
@@ -1382,18 +1386,6 @@
       renderUsersTable();
       await saveToCloud(true);
       alert("✓ 帳號資訊已成功更新！");
-    }
-
-    async function editUserEmailPrompt(idx) {
-      const u = systemUsers[idx];
-      const newEmail = prompt(`請為【${u.name}】輸入新的驗證信箱：`, u.email || "");
-      if (newEmail === null) return;
-      
-      u.email = newEmail.trim().toLowerCase();
-      localStorage.setItem(STORAGE_KEY_USERS, JSON.stringify(systemUsers));
-      renderUsersTable();
-      await saveToCloud(true);
-      alert("✓ 該同仁的驗證信箱已更新！");
     }
 
     async function changeUserRole(idx) {
@@ -1419,6 +1411,7 @@
       }
     }
 
+    // ★ 停用機制 ★
     async function toggleUserStatus(idx) {
       const u = systemUsers[idx];
       if (u.username === 'admin') { alert("最高管理員帳號無法停用！"); return; }
@@ -1428,6 +1421,7 @@
       await saveToCloud(true);
     }
 
+    // ★ 刪除機制 ★
     async function deleteUser(idx) {
       const u = systemUsers[idx];
       if (u.username === 'admin') { alert("最高管理員帳號無法刪除！"); return; }
@@ -1470,73 +1464,6 @@
         renderAcpReports();
       }
     }
-
-    const WEEK_DAYS_ZH = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
-    function padZero(num) { return String(num).padStart(2, '0'); }
-
-    function getSystemDateTime() {
-      const now = new Date();
-      const rocYear = now.getFullYear() - 1911;
-      const y = now.getFullYear();
-      const m = now.getMonth() + 1;
-      const d = now.getDate();
-      const dayZh = WEEK_DAYS_ZH[now.getDay()];
-      const hh = padZero(now.getHours());
-      const mm = padZero(now.getMinutes());
-      const ss = padZero(now.getSeconds());
-      const fullString = `民國 ${rocYear} 年 ${m} 月 ${d} 日 (${y}) ${hh}:${mm}:${ss} ${dayZh}`;
-      const shortDate = `${y}-${padZero(m)}-${padZero(d)}`;
-      const zhDateOnly = `民國 ${rocYear} 年 ${m} 月 ${d} 日 ${dayZh}`;
-      return { now, rocYear, y, m, d, dayZh, hh, mm, ss, fullString, shortDate, zhDateOnly };
-    }
-
-    function calculateCurrentWeekRange(baseDate = new Date()) {
-      const d = new Date(baseDate);
-      const day = d.getDay();
-      const diffToMonday = day === 0 ? -6 : 1 - day;
-      const monday = new Date(d);
-      monday.setDate(d.getDate() + diffToMonday);
-      const friday = new Date(monday);
-      friday.setDate(monday.getDate() + 4);
-      const sunday = new Date(monday);
-      sunday.setDate(monday.getDate() + 6);
-      const monStr = `${monday.getFullYear()}/${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())}`;
-      const friStr = `${padZero(friday.getMonth()+1)}/${padZero(friday.getDate())}`;
-      const sunStr = `${sunday.getFullYear()}/${padZero(sunday.getMonth()+1)}/${padZero(sunday.getDate())}`;
-      const workWeekStr = `${padZero(monday.getMonth()+1)}/${padZero(monday.getDate())} - ${friStr}`;
-      const fullWeekStr = `${monStr} ~ ${sunStr}`;
-      return { monday, friday, sunday, workWeekStr, fullWeekStr };
-    }
-
-    function startRealtimeClock() {
-      function updateClock() {
-        try {
-          const dt = getSystemDateTime();
-          const liveElem = document.getElementById("live-time-display");
-          if (liveElem) liveElem.innerText = dt.fullString;
-        } catch (e) {}
-      }
-      updateClock();
-      setInterval(updateClock, 1000);
-    }
-
-    const WEEKS_BY_YEAR = {};
-    const ALL_WEEKS = [];
-    (function generateAllWeeks() {
-      for (let y = 2025; y <= 2031; y++) { WEEKS_BY_YEAR[y] = []; }
-      let cur = new Date(2025, 0, 6);
-      const end = new Date(2031, 11, 29);
-      function fmt(d) { return `${d.getFullYear()}/${padZero(d.getMonth()+1)}/${padZero(d.getDate())}`; }
-      while (cur <= end) {
-        let sun = new Date(cur);
-        sun.setDate(cur.getDate() + 6);
-        const y = cur.getFullYear();
-        const str = `${fmt(cur)} ~ ${fmt(sun)}`;
-        if (WEEKS_BY_YEAR[y]) WEEKS_BY_YEAR[y].push(str);
-        ALL_WEEKS.push(str);
-        cur.setDate(cur.getDate() + 7);
-      }
-    })();
 
     function renderWeekCheckboxes(year) {
       const container = document.getElementById("week-checkboxes-container");
@@ -1955,47 +1882,83 @@
           document.getElementById("import-preview-list").innerHTML = parsedImportData.map(p => `<div>[${p.category}] ${p.name} (${p.owner})</div>`).join('');
           document.getElementById("confirm-import-btn").disabled = false;
         } else { alert("未能解析出專案資料！"); }
-        function startRealtimeClock() {
-      // ================= 即時時鐘與日期函式 =================
-    const WEEK_DAYS_ZH = ["星期日", "星期一", "星期二", "星期三", "星期四", "星期五", "星期六"];
-    function padZero(num) { return String(num).padStart(2, '0'); }
-
-    function getSystemDateTime() {
-      const now = new Date();
-      const rocYear = now.getFullYear() - 1911;
-      const y = now.getFullYear();
-      const m = now.getMonth() + 1;
-      const d = now.getDate();
-      const dayZh = WEEK_DAYS_ZH[now.getDay()];
-      const hh = padZero(now.getHours());
-      const mm = padZero(now.getMinutes());
-      const ss = padZero(now.getSeconds());
-      const fullString = `民國 ${rocYear} 年 ${m} 月 ${d} 日 (${y}) ${hh}:${mm}:${ss} ${dayZh}`;
-      const shortDate = `${y}-${padZero(m)}-${padZero(d)}`;
-      const zhDateOnly = `民國 ${rocYear} 年 ${m} 月 ${d} 日 ${dayZh}`;
-      return { now, rocYear, y, m, d, dayZh, hh, mm, ss, fullString, shortDate, zhDateOnly };
+      } catch (err) { alert("解析失敗：" + err.message); }
     }
 
-    function startRealtimeClock() {
-      function updateClock() {
-        try {
-          const dt = getSystemDateTime();
-          const liveElem = document.getElementById("live-time-display");
-          if (liveElem) liveElem.innerText = dt.fullString;
-        } catch (e) {}
+    function parseWorkbook(workbook) {
+      const results = [];
+      workbook.SheetNames.forEach(sheetName => {
+        const rows = XLSX.utils.sheet_to_json(workbook.Sheets[sheetName], { header: 1, defval: "" });
+        if (rows.length < 2) return;
+        for (let r = 1; r < rows.length; r++) {
+          const row = rows[r];
+          if (!row || row.length === 0) continue;
+          const name = String(row[1] || row[0] || "").trim();
+          if (!name || name.includes("總計") || name.length < 2) continue;
+          results.push({
+            id: Date.now() + results.length,
+            category: (sheetName.includes("VOC") || name.includes("沸石")) ? "空污專案" : "水污專案",
+            region: String(row[0] || "苗栗").trim(),
+            name: name,
+            status: "進行中",
+            progress: 50,
+            owner: "閔松",
+            report_week: calculateCurrentWeekRange().workWeekStr,
+            deadline: "依進度",
+            weeks: [calculateCurrentWeekRange().workWeekStr],
+            notes: String(row[row.length - 1] || "匯入更新"),
+            risk: "正常推展",
+            photos: []
+          });
+        }
+      });
+      return results;
+    }
+
+    function parseTextDoc(text, filename) {
+      const lines = text.split('\n').map(l => l.trim()).filter(l => l.length > 0);
+      return lines.map((l, idx) => ({
+        id: Date.now() + idx,
+        category: filename.includes("VOC") ? "空污專案" : "水污專案",
+        region: "廠內",
+        name: l.substring(0, 30),
+        status: "進行中",
+        progress: 50,
+        owner: "閔松",
+        report_week: calculateCurrentWeekRange().workWeekStr,
+        deadline: "依進度",
+        weeks: [calculateCurrentWeekRange().workWeekStr],
+        notes: l,
+        risk: "正常推展",
+        photos: []
+      }));
+    }
+
+    async function executeImport() {
+      if (parsedImportData.length === 0) return;
+      const mode = document.querySelector('input[name="import-mode"]:checked').value;
+      if (mode === 'overwrite') {
+        if (!canAdmin()) { alert("只有管理員可覆蓋！"); return; }
+        projects = parsedImportData;
+      } else {
+        parsedImportData.forEach(newP => {
+          const existIdx = projects.findIndex(p => p.name.trim() === newP.name.trim());
+          if (existIdx !== -1) {
+            projects[existIdx].notes = newP.notes;
+            projects[existIdx].progress = newP.progress;
+          } else {
+            projects.unshift(newP);
+          }
+        });
       }
-      updateClock();
-      setInterval(updateClock, 1000);
+      closeImportModal();
+      updateStats();
+      renderProjects();
+      await saveToCloud();
+      alert(`✓ 匯入成功！目前共 ${projects.length} 筆專案。`);
     }
 
-    // 確保 init 函式有執行它
-    async function init() {
-      startRealtimeClock(); // 讓時鐘啟動
-      // ... 其他初始化程式 ...
-    }
-
-    // 檔案最底部
     window.onload = init;
   </script>
-    window.onload = init;
-  </script>
+</body>
+</html>
